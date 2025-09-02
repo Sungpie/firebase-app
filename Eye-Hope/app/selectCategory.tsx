@@ -7,12 +7,13 @@ import {
   StyleSheet,
   SafeAreaView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function SelectCategoryScreen() {
   // 다중 선택을 위한 상태: string[] 배열
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const router = useRouter();
+  const { fromSettings } = useLocalSearchParams<{ fromSettings?: string }>();
 
   const categories = [
     "인기기사",
@@ -48,9 +49,15 @@ export default function SelectCategoryScreen() {
   const handleComplete = () => {
     if (selectedCategories.length > 0) {
       console.log("선택된 카테고리:", selectedCategories);
+      console.log("fromSettings 파라미터:", fromSettings);
+      console.log("fromSettings 타입:", typeof fromSettings);
+
       router.push({
         pathname: "/confirmation",
-        params: { categories: JSON.stringify(selectedCategories) },
+        params: {
+          categories: JSON.stringify(selectedCategories),
+          fromSettings: fromSettings || undefined,
+        },
       });
     }
   };

@@ -60,8 +60,17 @@ export default function TimeSelectScreen() {
     if (selectedMorningTime && selectedEveningTime) {
       // fromSettings 파라미터 확인
       if (fromSettings === "true") {
-        // 설정 페이지에서 왔다면 이전 화면으로 돌아가기
-        router.back();
+        // 설정 페이지에서 왔다면 설정 페이지로 돌아가면서 시간 정보 전달
+        router.push({
+          pathname: "/(tabs)/settings",
+          params: {
+            selectedTimes: JSON.stringify({
+              morning: selectedMorningTime,
+              evening: selectedEveningTime,
+            }),
+            fromSettings: "true",
+          },
+        });
       } else {
         // 일반 플로우라면 confirmation 페이지로 이동
         router.push({

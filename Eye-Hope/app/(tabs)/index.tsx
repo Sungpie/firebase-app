@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,65 +6,246 @@ import {
   SafeAreaView,
   ScrollView,
   Pressable,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+
+interface NewsItem {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  source: string;
+  publishedAt: string;
+}
 
 export default function InterestNewsScreen() {
+  const [newsData, setNewsData] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // 저장된 카테고리 불러오기
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  // 화면이 포커스될 때마다 카테고리 새로고침
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("관심뉴스 화면 포커스됨");
+      loadCategories();
+    }, [])
+  );
+
+  // 카테고리가 변경될 때마다 뉴스 다시 불러오기
+  useEffect(() => {
+    console.log("카테고리 변경 감지:", categories);
+    if (categories.length > 0) {
+      fetchNews();
+    } else {
+      setLoading(false);
+    }
+  }, [categories]);
+
+  const loadCategories = async () => {
+    try {
+      const savedCategories = await AsyncStorage.getItem("userCategories");
+      if (savedCategories) {
+        const parsedCategories = JSON.parse(savedCategories);
+        setCategories(parsedCategories);
+      } else {
+        // 기본 카테고리 설정
+        const defaultCategories = ["인기기사", "경제", "사회"];
+        setCategories(defaultCategories);
+      }
+    } catch (error) {
+      console.error("카테고리 로드 오류:", error);
+      // 기본 카테고리로 설정
+      setCategories(["인기기사", "경제", "사회"]);
+    }
+  };
+
+  const fetchNews = async () => {
+    if (categories.length === 0) return;
+
+    setLoading(true);
+    console.log("뉴스 가져오기 시작, 카테고리:", categories);
+
+    try {
+      const newsPromises = categories.map(async (category) => {
+        try {
+          const url = `http://13.124.111.205:8080/api/news/category/${encodeURIComponent(
+            category
+          )}?size=3`;
+          console.log(`${category} 카테고리 API 호출:`, url);
+
+          const response = await fetch(url);
+          console.log(`${category} 응답 상태:`, response.status);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log(`${category} 응답 데이터:`, data);
+
+          // 데이터 구조 확인 및 변환
+          if (data && Array.isArray(data)) {
+            return data;
+          } else if (data && Array.isArray(data.data)) {
+            console.log(
+              `${category} 카테고리: data 필드에서 뉴스 찾음, 개수:`,
+              data.data.length
+            );
+            return data.data;
+          } else if (data && Array.isArray(data.content)) {
+            return data.content;
+          } else if (data && Array.isArray(data.articles)) {
+            return data.articles;
+          } else {
+            console.log(`${category} 카테고리: 예상치 못한 데이터 구조:`, data);
+            return [];
+          }
+        } catch (error) {
+          console.error(`${category} 카테고리 뉴스 가져오기 실패:`, error);
+          return [];
+        }
+      });
+
+      const allNews = await Promise.all(newsPromises);
+      console.log("모든 뉴스 데이터:", allNews);
+      console.log(
+        "각 카테고리별 뉴스 개수:",
+        allNews.map((news, index) => `${categories[index]}: ${news.length}개`)
+      );
+
+      const flattenedNews = allNews.flat().map((news, index) => ({
+        id: news.id || news.articleId || `news-${index}`,
+        title: news.title || news.headline || "제목 없음",
+        content: news.content || news.summary || "내용 없음",
+        category: news.category || news.section || "기타",
+        source: news.source || news.publisher || "출처 없음",
+        publishedAt:
+          news.publishedAt ||
+          news.createdAt ||
+          news.publishDate ||
+          new Date().toISOString(),
+      }));
+
+      console.log("변환된 뉴스 데이터:", flattenedNews);
+      setNewsData(flattenedNews);
+    } catch (error) {
+      console.error("뉴스 가져오기 오류:", error);
+      Alert.alert("오류", "뉴스를 가져오는 중 문제가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchNews();
+    setRefreshing(false);
+  };
+
+  const formatTimeAgo = (publishedAt: string) => {
+    const now = new Date();
+    const published = new Date(publishedAt);
+    const diffInHours = Math.floor(
+      (now.getTime() - published.getTime()) / (1000 * 60 * 60)
+    );
+
+    if (diffInHours < 1) return "방금 전";
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}일 전`;
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>관심뉴스</Text>
+          <Text style={styles.subtitle}>뉴스를 불러오는 중...</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>뉴스를 불러오는 중입니다</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 */}
       <View style={styles.header}>
         <Text style={styles.title}>관심뉴스</Text>
         <Text style={styles.subtitle}>
-          선택한 카테고리의 최신 뉴스를 확인하세요
+          {categories.length > 0
+            ? `${categories.join(", ")} 카테고리의 최신 뉴스입니다`
+            : "설정에서 관심 카테고리를 선택해주세요"}
         </Text>
       </View>
 
       {/* 뉴스 목록 */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.newsSection}>
-          <Text style={styles.sectionTitle}>오늘의 주요 뉴스</Text>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {newsData.length > 0 ? (
+          <View style={styles.newsSection}>
+            <Text style={styles.sectionTitle}>오늘의 주요 뉴스</Text>
 
-          {/* 샘플 뉴스 카드들 */}
-          <View style={styles.newsCard}>
-            <View style={styles.newsHeader}>
-              <Text style={styles.newsCategory}>경제</Text>
-              <Text style={styles.newsTime}>2시간 전</Text>
-            </View>
-            <Text style={styles.newsTitle}>
-              시장 전망 긍정적, 투자자들 낙관적 전망
-            </Text>
-            <Text style={styles.newsSource}>경제일보</Text>
+            {newsData.map((news) => (
+              <View key={news.id} style={styles.newsCard}>
+                <View style={styles.newsHeader}>
+                  <Text style={styles.newsCategory}>{news.category}</Text>
+                  <Text style={styles.newsTime}>
+                    {formatTimeAgo(news.publishedAt)}
+                  </Text>
+                </View>
+                <Text style={styles.newsTitle}>{news.title}</Text>
+                <Text style={styles.newsSource}>{news.source}</Text>
+              </View>
+            ))}
           </View>
-
-          <View style={styles.newsCard}>
-            <View style={styles.newsHeader}>
-              <Text style={styles.newsCategory}>사회</Text>
-              <Text style={styles.newsTime}>4시간 전</Text>
-            </View>
-            <Text style={styles.newsTitle}>
-              새로운 정책 발표, 시민들 반응 긍정적
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="newspaper-outline" size={64} color="#C7C7CC" />
+            <Text style={styles.emptyTitle}>뉴스가 없습니다</Text>
+            <Text style={styles.emptySubtitle}>
+              설정에서 관심 카테고리를 선택하거나{"\n"}새로고침을 시도해보세요
             </Text>
-            <Text style={styles.newsSource}>사회뉴스</Text>
           </View>
-
-          <View style={styles.newsCard}>
-            <View style={styles.newsHeader}>
-              <Text style={styles.newsCategory}>기술</Text>
-              <Text style={styles.newsTime}>6시간 전</Text>
-            </View>
-            <Text style={styles.newsTitle}>
-              AI 기술 발전, 일상생활 변화 가져와
-            </Text>
-            <Text style={styles.newsSource}>기술뉴스</Text>
-          </View>
-        </View>
+        )}
 
         {/* 새로고침 버튼 */}
         <View style={styles.refreshSection}>
-          <Pressable style={styles.refreshButton}>
-            <Ionicons name="refresh" size={20} color="#007AFF" />
-            <Text style={styles.refreshText}>새로고침</Text>
+          <Pressable
+            style={styles.refreshButton}
+            onPress={handleRefresh}
+            disabled={refreshing}
+          >
+            <Ionicons
+              name="refresh"
+              size={20}
+              color={refreshing ? "#C7C7CC" : "#007AFF"}
+            />
+            <Text
+              style={[styles.refreshText, refreshing && styles.refreshingText]}
+            >
+              {refreshing ? "새로고침 중..." : "새로고침"}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -99,6 +280,35 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#8E8E93",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#8E8E93",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: "#C7C7CC",
+    textAlign: "center",
+    lineHeight: 22,
   },
   newsSection: {
     marginTop: 20,
@@ -174,5 +384,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     color: "#007AFF",
+  },
+  refreshingText: {
+    color: "#C7C7CC",
   },
 });

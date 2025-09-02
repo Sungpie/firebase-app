@@ -3,7 +3,10 @@ import { View, Text, Pressable, StyleSheet, SafeAreaView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function ConfirmationScreen() {
-  const { categories } = useLocalSearchParams<{ categories: string }>();
+  const { categories, fromSettings } = useLocalSearchParams<{
+    categories: string;
+    fromSettings?: string;
+  }>();
   const router = useRouter();
 
   // JSON 문자열을 파싱하여 카테고리 배열로 변환
@@ -15,11 +18,26 @@ export default function ConfirmationScreen() {
 
   const handleConfirm = () => {
     console.log("최종 확인:", selectedCategories);
-    // timeSelect 화면으로 이동하면서 categories 파라미터 전달
-    router.push({
-      pathname: "/timeSelect",
-      params: { categories: JSON.stringify(selectedCategories) },
-    });
+    console.log("fromSettings 파라미터:", fromSettings);
+    console.log("fromSettings 타입:", typeof fromSettings);
+
+    // fromSettings 파라미터가 있으면 설정 페이지로 돌아가기
+    if (fromSettings === "true") {
+      console.log("설정 페이지로 돌아가기");
+      router.push({
+        pathname: "/(tabs)/settings",
+        params: {
+          selectedCategories: JSON.stringify(selectedCategories),
+        },
+      });
+    } else {
+      console.log("시간대 선택으로 이동");
+      // 일반 플로우라면 timeSelect 화면으로 이동
+      router.push({
+        pathname: "/timeSelect",
+        params: { categories: JSON.stringify(selectedCategories) },
+      });
+    }
   };
 
   return (

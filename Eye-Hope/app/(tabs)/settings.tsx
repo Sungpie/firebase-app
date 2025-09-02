@@ -1,34 +1,110 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
-  Pressable,
+  TouchableOpacity,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
 
-  // 샘플 데이터 (실제로는 사용자 설정에서 가져와야 함)
-  const selectedCategories = ["인기기사", "복지", "정치", "자립생활", "경제"];
-  const currentMorningTime = "오전 9시";
-  const currentEveningTime = "오후 8시";
+  // 상태 관리
+  const [currentCategories, setCurrentCategories] = useState<string[]>([
+    "인기기사",
+    "복지",
+    "정치",
+    "자립생활",
+    "경제",
+  ]);
+  const [currentTimes, setCurrentTimes] = useState<{
+    morning: string;
+    evening: string;
+  }>({
+    morning: "오전 9시",
+    evening: "오후 8시",
+  });
 
-  const handleTimeChange = () => {
-    // timeSelect 페이지로 이동하면서 fromSettings 파라미터 전달
+  // 앱 시작 시 저장된 카테고리 로드
+  useEffect(() => {
+    loadSavedCategories();
+  }, []);
+
+  // 저장된 카테고리 불러오기
+  const loadSavedCategories = async () => {
+    try {
+      const savedCategories = await AsyncStorage.getItem("userCategories");
+      if (savedCategories) {
+        const parsedCategories = JSON.parse(savedCategories);
+        setCurrentCategories(parsedCategories);
+      }
+    } catch (error) {
+      console.error("저장된 카테고리 로드 오류:", error);
+    }
+  };
+
+  // 파라미터 변경 감지 및 상태 업데이트
+  useEffect(() => {
+    console.log("파라미터 변경 감지:", params);
+
+    // selectedCategories 파라미터가 있으면 업데이트
+    if (params.selectedCategories) {
+      try {
+        const categories = JSON.parse(params.selectedCategories as string);
+        console.log("파싱된 카테고리:", categories);
+        if (Array.isArray(categories)) {
+          setCurrentCategories(categories);
+          // AsyncStorage에 카테고리 저장
+          saveCategoriesToStorage(categories);
+        }
+      } catch (error) {
+        console.error("카테고리 파싱 오류:", error);
+      }
+    }
+
+    // selectedTimes 파라미터가 있으면 업데이트
+    if (params.selectedTimes) {
+      try {
+        const times = JSON.parse(params.selectedTimes as string);
+        if (times.morning && times.evening) {
+          setCurrentTimes({
+            morning: times.morning,
+            evening: times.evening,
+          });
+        }
+      } catch (error) {
+        console.error("시간 파라미터 파싱 오류:", error);
+      }
+    }
+  }, [params.selectedCategories, params.selectedTimes]);
+
+  // AsyncStorage에 카테고리 저장
+  const saveCategoriesToStorage = async (categories: string[]) => {
+    try {
+      await AsyncStorage.setItem("userCategories", JSON.stringify(categories));
+      console.log("카테고리가 저장되었습니다:", categories);
+    } catch (error) {
+      console.error("카테고리 저장 오류:", error);
+    }
+  };
+
+  const handleCategoryChange = () => {
     router.push({
-      pathname: "/timeSelect" as any,
+      pathname: "/selectCategory",
       params: { fromSettings: "true" },
     });
   };
 
-  const handleCategoryChange = () => {
-    // 카테고리 변경 페이지로 이동 (필요시 구현)
-    console.log("카테고리 변경");
+  const handleTimeChange = () => {
+    router.push({
+      pathname: "/timeSelect" as any,
+      params: { fromSettings: "true" },
+    });
   };
 
   return (
@@ -47,10 +123,17 @@ export default function SettingsScreen() {
       </View>
 
       {/* 현재 관심뉴스 섹션 */}
-      <View style={styles.interestNewsSection}>
+      <TouchableOpacity
+        style={styles.interestNewsSection}
+        onPress={handleCategoryChange}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="관심 뉴스를 변경하려면 탭하세요"
+        accessibilityHint="관심 뉴스 카테고리를 수정할 수 있는 페이지로 이동합니다"
+      >
         <Text style={styles.sectionTitle}>현재 관심뉴스</Text>
         <View style={styles.categoriesContainer}>
-          {selectedCategories.map((category, index) => (
+          {currentCategories.map((category, index) => (
             <View key={index} style={styles.categoryTag}>
               <Text style={styles.categoryText}>{category}</Text>
             </View>
@@ -59,35 +142,38 @@ export default function SettingsScreen() {
         <Text style={styles.questionText}>
           관심뉴스를 수정 / 변경하시겠어요?
         </Text>
-        <Pressable onPress={handleCategoryChange}>
-          <Text style={styles.instructionText}>
-            변경을 원하신다면 두 번 눌러주세요.
-          </Text>
-        </Pressable>
-      </View>
+        <Text style={styles.instructionText}>
+          변경을 원하신다면 두 번 눌러주세요.
+        </Text>
+      </TouchableOpacity>
 
       {/* 시간대 변경 섹션 */}
-      <View style={styles.timeChangeSection}>
+      <TouchableOpacity
+        style={styles.timeChangeSection}
+        onPress={handleTimeChange}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="시간대를 변경하려면 탭하세요"
+        accessibilityHint="뉴스 알림을 받을 시간대를 수정할 수 있는 페이지로 이동합니다"
+      >
         <Text style={styles.sectionTitle}>시간 대 변경</Text>
         <View style={styles.timeInfoContainer}>
           <Text style={styles.timeInfoText}>현재 시간 대는</Text>
           <View style={styles.timeButtonsContainer}>
             <View style={styles.timeButton}>
-              <Text style={styles.timeButtonText}>{currentMorningTime}</Text>
+              <Text style={styles.timeButtonText}>{currentTimes.morning}</Text>
             </View>
             <Text style={styles.timeInfoText}>와</Text>
             <View style={styles.timeButton}>
-              <Text style={styles.timeButtonText}>{currentEveningTime}</Text>
+              <Text style={styles.timeButtonText}>{currentTimes.evening}</Text>
             </View>
             <Text style={styles.timeInfoText}>에요.</Text>
           </View>
         </View>
-        <Pressable onPress={handleTimeChange}>
-          <Text style={styles.instructionText}>
-            시간대 변경을 원하신다면 두 번 눌러주세요.
-          </Text>
-        </Pressable>
-      </View>
+        <Text style={styles.instructionText}>
+          시간대 변경을 원하신다면 두 번 눌러주세요.
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -138,6 +224,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 16,
     backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
   },
   sectionTitle: {
     fontSize: 18,
@@ -178,6 +267,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 16,
     backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
   },
   timeInfoContainer: {
     marginBottom: 16,
