@@ -7,9 +7,12 @@ import {
   StyleSheet,
   SafeAreaView,
 } from "react-native";
+import { useRouter } from "expo-router";
 
-export default function CategorySelectionScreen() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+export default function SelectCategoryScreen() {
+  // 다중 선택을 위한 상태: string[] 배열
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const router = useRouter();
 
   const categories = [
     "인기기사",
@@ -26,15 +29,29 @@ export default function CategorySelectionScreen() {
     "문화",
   ];
 
+  // 카테고리 선택/해제 및 최대 5개 제한
   const handleCategorySelect = (category: string) => {
-    console.log("터치됨:", category); // 디버깅용 로그
-    setSelectedCategory(category);
+    if (selectedCategories.includes(category)) {
+      // 이미 선택된 경우 해제
+      setSelectedCategories(selectedCategories.filter((c) => c !== category));
+    } else {
+      if (selectedCategories.length < 5) {
+        setSelectedCategories([...selectedCategories, category]);
+      } else {
+        // 5개 초과 선택 방지
+        alert("최대 5개까지 선택할 수 있어요!");
+      }
+    }
   };
 
+  // 완료 버튼 클릭 시, 선택된 카테고리 배열을 쿼리 파라미터로 전달
   const handleComplete = () => {
-    if (selectedCategory) {
-      console.log("선택된 카테고리:", selectedCategory);
-      // 여기에 완료 처리 로직을 추가할 수 있습니다
+    if (selectedCategories.length > 0) {
+      console.log("선택된 카테고리:", selectedCategories);
+      router.push({
+        pathname: "/confirmation",
+        params: { categories: JSON.stringify(selectedCategories) },
+      });
     }
   };
 
@@ -43,10 +60,10 @@ export default function CategorySelectionScreen() {
       {/* 상단 안내 문구 */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
-          관심 분야를 선택을 진행하겠습니다.
+          관심 분야 선택을 진행하겠습니다.
         </Text>
         <Text style={styles.instructionText}>
-          총 12개의 분야 중, 원하는 뉴스 기사 분야를 선택해주세요.
+          총 12개의 분야 중, 원하는 뉴스 기사 분야를 최대 5개까지 선택해주세요.
         </Text>
       </View>
 
@@ -57,8 +74,8 @@ export default function CategorySelectionScreen() {
         contentContainerStyle={styles.gridContent}
       >
         <View style={styles.gridWrapper}>
-          {categories.map((item, index) => {
-            const isSelected = selectedCategory === item;
+          {categories.map((item) => {
+            const isSelected = selectedCategories.includes(item);
             return (
               <Pressable
                 key={item}
@@ -67,7 +84,7 @@ export default function CategorySelectionScreen() {
                   isSelected && styles.selectedCategoryButton,
                 ]}
                 onPress={() => handleCategorySelect(item)}
-                onPressIn={() => console.log("터치 시작:", item)} // 디버깅용
+                onPressIn={() => console.log("터치 시작:", item)}
                 accessibilityLabel={`${item} 카테고리`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -92,17 +109,17 @@ export default function CategorySelectionScreen() {
         <Pressable
           style={({ pressed }) => [
             styles.completeButton,
-            !selectedCategory && styles.disabledCompleteButton,
+            selectedCategories.length === 0 && styles.disabledCompleteButton,
             pressed && styles.pressedButton,
           ]}
           onPress={handleComplete}
-          disabled={!selectedCategory}
-          onPressIn={() => console.log("완료 버튼 터치됨")} // 디버깅용
+          disabled={selectedCategories.length === 0}
+          onPressIn={() => console.log("완료 버튼 터치됨")}
           accessibilityLabel="선택 완료 버튼"
           accessibilityRole="button"
-          accessibilityState={{ disabled: !selectedCategory }}
+          accessibilityState={{ disabled: selectedCategories.length === 0 }}
           accessibilityHint={
-            selectedCategory
+            selectedCategories.length > 0
               ? "선택한 카테고리로 진행하려면 두 번 탭하세요"
               : "카테고리를 먼저 선택해주세요"
           }
@@ -110,7 +127,8 @@ export default function CategorySelectionScreen() {
           <Text
             style={[
               styles.completeButtonText,
-              !selectedCategory && styles.disabledCompleteButtonText,
+              selectedCategories.length === 0 &&
+                styles.disabledCompleteButtonText,
             ]}
           >
             완료
@@ -165,10 +183,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#CCCCCC",
     marginBottom: 12,
-    // 터치 영역을 명확하게 하기 위한 추가 스타일
     minHeight: 60,
-    elevation: 2, // Android 그림자
-    shadowColor: "#000", // iOS 그림자
+    elevation: 2,
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
