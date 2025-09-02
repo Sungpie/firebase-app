@@ -1,9 +1,10 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, SafeAreaView } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function ConfirmationScreen() {
   const { categories } = useLocalSearchParams<{ categories: string }>();
+  const router = useRouter();
 
   // JSON 문자열을 파싱하여 카테고리 배열로 변환
   const selectedCategories = categories ? JSON.parse(categories) : [];
@@ -14,8 +15,8 @@ export default function ConfirmationScreen() {
 
   const handleConfirm = () => {
     console.log("최종 확인:", selectedCategories);
-    // 여기에 최종 처리 로직을 추가할 수 있습니다
-    // 예: API 호출, 데이터 저장 등
+    // timeSelect 화면으로 이동
+    router.push("/timeSelect");
   };
 
   return (

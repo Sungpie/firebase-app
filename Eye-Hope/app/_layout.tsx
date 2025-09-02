@@ -38,6 +38,13 @@ export default function RootLayout() {
             title: "확인",
           }}
         />
+        <Stack.Screen
+          name="timeSelect"
+          options={{
+            headerShown: false,
+            title: "시간 선택",
+          }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
