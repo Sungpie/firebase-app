@@ -7,13 +7,17 @@ import {
   ScrollView,
   Pressable,
   Switch,
+  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+
+  const router = useRouter();
 
   const settingsItems = [
     {
@@ -91,6 +95,62 @@ export default function SettingsScreen() {
     </View>
   );
 
+  // 관심뉴스 섹션
+  const renderCurrentCategorySection = () => (
+    <TouchableOpacity
+      style={styles.customSection}
+      onPress={() => router.push("/selectCategory")}
+      accessibilityRole="button"
+      accessibilityLabel="현재 관심뉴스"
+      accessibilityHint="관심 뉴스를 변경하려면 두 번 탭하세요"
+      activeOpacity={0.7}
+    >
+      <View style={styles.customSectionInner}>
+        <Ionicons
+          name="star"
+          size={24}
+          color="#FF9500"
+          style={{ marginRight: 12 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.customSectionTitle}>현재 관심뉴스</Text>
+          <Text style={styles.customSectionSubtitle}>
+            관심 있는 카테고리를 선택하세요
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+      </View>
+    </TouchableOpacity>
+  );
+
+  // 시간대 변경 섹션
+  const renderTimeChangeSection = () => (
+    <TouchableOpacity
+      style={styles.customSection}
+      onPress={() => router.push("/timeSelect")}
+      accessibilityRole="button"
+      accessibilityLabel="시간대 변경"
+      accessibilityHint="시간대를 변경하려면 두 번 탭하세요"
+      activeOpacity={0.7}
+    >
+      <View style={styles.customSectionInner}>
+        <Ionicons
+          name="time"
+          size={24}
+          color="#007AFF"
+          style={{ marginRight: 12 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.customSectionTitle}>시간대 변경</Text>
+          <Text style={styles.customSectionSubtitle}>
+            뉴스 알림을 받을 시간대를 설정하세요
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 */}
@@ -101,6 +161,12 @@ export default function SettingsScreen() {
 
       {/* 설정 목록 */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* 관심뉴스 섹션 */}
+        {renderCurrentCategorySection()}
+
+        {/* 시간대 변경 섹션 */}
+        {renderTimeChangeSection()}
+
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>일반</Text>
           {settingsItems.slice(0, 3).map(renderSettingItem)}
@@ -198,6 +264,30 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   settingSubtitle: {
+    fontSize: 14,
+    color: "#8E8E93",
+    lineHeight: 18,
+  },
+  customSection: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    marginTop: 20,
+    marginBottom: 0,
+    overflow: "hidden",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  customSectionInner: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  customSectionTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000000",
+    marginBottom: 2,
+  },
+  customSectionSubtitle: {
     fontSize: 14,
     color: "#8E8E93",
     lineHeight: 18,
