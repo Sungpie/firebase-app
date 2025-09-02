@@ -15,8 +15,11 @@ export default function ConfirmationScreen() {
 
   const handleConfirm = () => {
     console.log("최종 확인:", selectedCategories);
-    // timeSelect 화면으로 이동
-    router.push("/timeSelect");
+    // timeSelect 화면으로 이동하면서 categories 파라미터 전달
+    router.push({
+      pathname: "/timeSelect",
+      params: { categories: JSON.stringify(selectedCategories) },
+    });
   };
 
   return (
