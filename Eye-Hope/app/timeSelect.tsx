@@ -73,7 +73,7 @@ export default function TimeSelectScreen() {
     setIsModalVisible(false);
     // newsList 화면으로 이동하면서 categories 파라미터 전달
     router.push({
-      pathname: "/newsList",
+      pathname: "/newsList" as any,
       params: { categories: categories },
     });
   };
