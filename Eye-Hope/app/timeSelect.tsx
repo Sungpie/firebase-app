@@ -5,13 +5,15 @@ import {
   Pressable,
   StyleSheet,
   SafeAreaView,
-  Modal,
   ScrollView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function TimeSelectScreen() {
-  const { categories } = useLocalSearchParams<{ categories: string }>();
+  const { categories, fromSettings } = useLocalSearchParams<{
+    categories: string;
+    fromSettings?: string;
+  }>();
   const router = useRouter();
 
   // JSON 문자열을 파싱하여 카테고리 배열로 변환
@@ -22,7 +24,6 @@ export default function TimeSelectScreen() {
   const [selectedEveningTime, setSelectedEveningTime] = useState<string | null>(
     null
   );
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const morningTimes = [
     "5시",
@@ -57,25 +58,22 @@ export default function TimeSelectScreen() {
 
   const handleComplete = () => {
     if (selectedMorningTime && selectedEveningTime) {
-      setIsModalVisible(true);
+      // fromSettings 파라미터 확인
+      if (fromSettings === "true") {
+        // 설정 페이지에서 왔다면 이전 화면으로 돌아가기
+        router.back();
+      } else {
+        // 일반 플로우라면 confirmation 페이지로 이동
+        router.push({
+          pathname: "/confirmation" as any,
+          params: {
+            categories: categories,
+            morningTime: selectedMorningTime,
+            eveningTime: selectedEveningTime,
+          },
+        });
+      }
     }
-  };
-
-  const handleModalClose = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleConfirm = () => {
-    console.log("선택된 시간:", {
-      아침: selectedMorningTime,
-      저녁: selectedEveningTime,
-    });
-    setIsModalVisible(false);
-    // newsList 화면으로 이동하면서 categories 파라미터 전달
-    router.push({
-      pathname: "/newsList" as any,
-      params: { categories: categories },
-    });
   };
 
   const renderTimeButton = (
@@ -194,64 +192,6 @@ export default function TimeSelectScreen() {
           </Text>
         </Pressable>
       </View>
-
-      {/* 확인 모달 */}
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleModalClose}
-        accessibilityLabel="시간 선택 확인 모달"
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>선택한 시간은</Text>
-
-            <View style={styles.selectedTimesContainer}>
-              <Text style={styles.selectedTimeText}>
-                아침 {selectedMorningTime}
-              </Text>
-              <Text style={styles.selectedTimeText}>
-                저녁 {selectedEveningTime}
-              </Text>
-            </View>
-
-            <Text style={styles.modalQuestion}>
-              이 시간 대에 뉴스 알림을 보내드릴까요?
-            </Text>
-
-            <View style={styles.modalButtonContainer}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.modalButton,
-                  styles.modalConfirmButton,
-                  pressed && styles.pressedButton,
-                ]}
-                onPress={handleConfirm}
-                accessibilityLabel="맞아요 버튼"
-                accessibilityRole="button"
-                accessibilityHint="선택한 시간이 맞다면 두 번 탭하세요"
-              >
-                <Text style={styles.modalConfirmButtonText}>맞아요.</Text>
-              </Pressable>
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.modalButton,
-                  styles.modalModifyButton,
-                  pressed && styles.pressedButton,
-                ]}
-                onPress={handleModalClose}
-                accessibilityLabel="수정할게요 버튼"
-                accessibilityRole="button"
-                accessibilityHint="시간을 수정하려면 두 번 탭하세요"
-              >
-                <Text style={styles.modalModifyButtonText}>수정할게요.</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -378,86 +318,5 @@ const styles = StyleSheet.create({
   },
   disabledCompleteButtonText: {
     color: "#999999",
-  },
-  // 모달 스타일
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 24,
-    marginHorizontal: 20,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#87CEEB",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#000000",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  selectedTimesContainer: {
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  selectedTimeText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#007AFF",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  modalQuestion: {
-    fontSize: 16,
-    color: "#000000",
-    textAlign: "center",
-    lineHeight: 24,
-    marginBottom: 24,
-  },
-  modalButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#87CEEB",
-  },
-  modalConfirmButton: {
-    borderColor: "#87CEEB",
-  },
-  modalModifyButton: {
-    borderColor: "#87CEEB",
-  },
-  modalConfirmButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#007AFF",
-  },
-  modalModifyButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#007AFF",
   },
 });

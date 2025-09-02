@@ -23,12 +23,12 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="category"
         options={{
-          title: "관심뉴스",
+          title: "카테고리",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? "newspaper" : "newspaper-outline"}
+              name={focused ? "grid" : "grid-outline"}
               size={size}
               color={color}
             />
@@ -36,12 +36,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="category"
+        name="index"
         options={{
-          title: "카테고리",
+          title: "관심뉴스",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? "grid" : "grid-outline"}
+              name={focused ? "newspaper" : "newspaper-outline"}
               size={size}
               color={color}
             />
