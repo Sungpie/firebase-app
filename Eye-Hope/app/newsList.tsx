@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
@@ -44,18 +45,39 @@ export default function NewsListScreen() {
       setIsLoading(true);
       setError(null);
 
+      // 카테고리가 없으면 에러 처리
+      if (!selectedCategories || selectedCategories.length === 0) {
+        throw new Error("선택된 카테고리가 없습니다.");
+      }
+
       // 모든 카테고리에 대해 동시에 API 요청
       const promises = selectedCategories.map(async (category: string) => {
-        const response = await fetch(
-          `http://13.124.111.205:8080/api/news/category/${category}?size=3`
-        );
+        try {
+          const response = await fetch(
+            `http://13.124.111.205:8080/api/news/category/${category}?size=3`
+          );
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch news for ${category}`);
+          if (!response.ok) {
+            throw new Error(
+              `${category} 카테고리 뉴스를 불러오는데 실패했습니다.`
+            );
+          }
+
+          const data: NewsResponse = await response.json();
+
+          // API 응답 검증
+          if (!data.success || !data.data) {
+            throw new Error(
+              `${category} 카테고리 데이터 형식이 올바르지 않습니다.`
+            );
+          }
+
+          return { category, news: data.data };
+        } catch (categoryError) {
+          // 개별 카테고리 에러를 로그로 남기고 빈 배열 반환
+          console.error(`Error fetching ${category}:`, categoryError);
+          return { category, news: [] };
         }
-
-        const data: NewsResponse = await response.json();
-        return { category, news: data.data };
       });
 
       const results = await Promise.all(promises);
@@ -101,7 +123,18 @@ export default function NewsListScreen() {
       >
         {category}
       </Text>
-      {newsItems.map((newsItem, index) => renderNewsCard(newsItem, index))}
+      {newsItems.length > 0 ? (
+        newsItems.map((newsItem, index) => renderNewsCard(newsItem, index))
+      ) : (
+        <View style={styles.emptyNewsCard}>
+          <Text
+            style={styles.emptyNewsText}
+            accessibilityLabel={`${category} 카테고리에 뉴스가 없습니다`}
+          >
+            이 카테고리에는 현재 뉴스가 없습니다.
+          </Text>
+        </View>
+      )}
     </View>
   );
 
@@ -166,7 +199,7 @@ export default function NewsListScreen() {
         })}
       </ScrollView>
 
-      {/* 하단 안내 문구 */}
+      {/* 하단 안내 문구 및 새로고침 버튼 */}
       <View style={styles.bottomInstructionContainer}>
         <Text
           style={styles.bottomInstructionText}
@@ -174,6 +207,18 @@ export default function NewsListScreen() {
         >
           다른 기사 목록을 볼 수 있습니다.
         </Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.refreshButton,
+            pressed && styles.pressedButton,
+          ]}
+          onPress={fetchNewsData}
+          accessibilityLabel="뉴스 새로고침 버튼"
+          accessibilityRole="button"
+          accessibilityHint="최신 뉴스를 다시 불러오려면 두 번 탭하세요"
+        >
+          <Text style={styles.refreshButtonText}>새로고침</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -282,5 +327,45 @@ const styles = StyleSheet.create({
     color: "#FF3B30",
     textAlign: "center",
     lineHeight: 24,
+  },
+  emptyNewsCard: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    backgroundColor: "#F8F8F8",
+    alignItems: "center",
+  },
+  emptyNewsText: {
+    fontSize: 14,
+    color: "#999999",
+    fontStyle: "italic",
+    textAlign: "center",
+  },
+  refreshButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+  },
+  pressedButton: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
+  },
+  refreshButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    textAlign: "center",
   },
 });

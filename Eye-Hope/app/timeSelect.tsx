@@ -13,6 +13,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 export default function TimeSelectScreen() {
   const { categories } = useLocalSearchParams<{ categories: string }>();
   const router = useRouter();
+
+  // JSON 문자열을 파싱하여 카테고리 배열로 변환
+  const selectedCategories = categories ? JSON.parse(categories) : [];
   const [selectedMorningTime, setSelectedMorningTime] = useState<string | null>(
     null
   );
