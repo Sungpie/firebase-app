@@ -8,8 +8,11 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function TimeSelectScreen() {
+  const { categories } = useLocalSearchParams<{ categories: string }>();
+  const router = useRouter();
   const [selectedMorningTime, setSelectedMorningTime] = useState<string | null>(
     null
   );
@@ -65,7 +68,11 @@ export default function TimeSelectScreen() {
       저녁: selectedEveningTime,
     });
     setIsModalVisible(false);
-    // 여기에 최종 처리 로직을 추가할 수 있습니다
+    // newsList 화면으로 이동하면서 categories 파라미터 전달
+    router.push({
+      pathname: "/newsList",
+      params: { categories: categories },
+    });
   };
 
   const renderTimeButton = (

@@ -45,6 +45,13 @@ export default function RootLayout() {
             title: "시간 선택",
           }}
         />
+        <Stack.Screen
+          name="newsList"
+          options={{
+            headerShown: false,
+            title: "관심 뉴스",
+          }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
