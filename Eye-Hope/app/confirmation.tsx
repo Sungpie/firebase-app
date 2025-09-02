@@ -24,6 +24,10 @@ export default function ConfirmationScreen() {
     // fromSettings 파라미터가 있으면 설정 페이지로 돌아가기
     if (fromSettings === "true") {
       console.log("설정 페이지로 돌아가기");
+      console.log(
+        "전달할 selectedCategories:",
+        JSON.stringify(selectedCategories)
+      );
       router.push({
         pathname: "/(tabs)/settings",
         params: {

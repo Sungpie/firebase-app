@@ -9,6 +9,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -16,11 +17,11 @@ export default function SettingsScreen() {
 
   // 상태 관리
   const [currentCategories, setCurrentCategories] = useState<string[]>([
-    "인기기사",
-    "복지",
-    "정치",
-    "자립생활",
     "경제",
+    "정치",
+    "사회",
+    "IT",
+    "스포츠",
   ]);
   const [currentTimes, setCurrentTimes] = useState<{
     morning: string;
@@ -35,29 +36,90 @@ export default function SettingsScreen() {
     loadSavedCategories();
   }, []);
 
-  // 저장된 카테고리 불러오기
+  // 화면이 포커스될 때마다 저장된 데이터 새로고침
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("설정 화면 포커스됨 - 데이터 새로고침");
+      console.log("현재 params:", params);
+      console.log("params.selectedCategories:", params.selectedCategories);
+      console.log("params.selectedTimes:", params.selectedTimes);
+
+      // 파라미터가 있으면 우선 처리 후 즉시 반환
+      if (params.selectedCategories || params.selectedTimes) {
+        console.log("파라미터가 있어서 파라미터 우선 처리");
+        handleParamsUpdate();
+        return; // 파라미터 처리 후 즉시 반환
+      }
+
+      // 파라미터가 없을 때만 저장된 데이터 로드
+      console.log("파라미터가 없어서 저장된 데이터 로드");
+      loadSavedCategories();
+    }, [params.selectedCategories, params.selectedTimes])
+  );
+
+  // 저장된 카테고리와 시간 정보 불러오기
   const loadSavedCategories = async () => {
     try {
+      // 카테고리 로드
       const savedCategories = await AsyncStorage.getItem("userCategories");
       if (savedCategories) {
         const parsedCategories = JSON.parse(savedCategories);
         setCurrentCategories(parsedCategories);
+        console.log("저장된 카테고리 로드됨:", parsedCategories);
+      }
+
+      // 시간 정보 로드
+      const savedTimes = await AsyncStorage.getItem("userTimes");
+      if (savedTimes) {
+        const parsedTimes = JSON.parse(savedTimes);
+        setCurrentTimes(parsedTimes);
+        console.log("저장된 시간 정보 로드됨:", parsedTimes);
       }
     } catch (error) {
-      console.error("저장된 카테고리 로드 오류:", error);
+      console.error("저장된 데이터 로드 오류:", error);
     }
   };
 
-  // 파라미터 변경 감지 및 상태 업데이트
+  // 파라미터 변경 감지 (useFocusEffect에서 처리하므로 간소화)
   useEffect(() => {
     console.log("파라미터 변경 감지:", params);
+    // 실제 처리는 useFocusEffect에서 담당
+  }, [params.selectedCategories, params.selectedTimes]);
+
+  // AsyncStorage에 카테고리 저장
+  const saveCategoriesToStorage = async (categories: string[]) => {
+    try {
+      await AsyncStorage.setItem("userCategories", JSON.stringify(categories));
+      console.log("카테고리가 저장되었습니다:", categories);
+    } catch (error) {
+      console.error("카테고리 저장 오류:", error);
+    }
+  };
+
+  // AsyncStorage에 시간 정보 저장
+  const saveTimesToStorage = async (times: {
+    morning: string;
+    evening: string;
+  }) => {
+    try {
+      await AsyncStorage.setItem("userTimes", JSON.stringify(times));
+      console.log("시간 정보가 저장되었습니다:", times);
+    } catch (error) {
+      console.error("시간 정보 저장 오류:", error);
+    }
+  };
+
+  // 파라미터 업데이트 처리 함수
+  const handleParamsUpdate = () => {
+    console.log("파라미터 업데이트 처리 시작");
 
     // selectedCategories 파라미터가 있으면 업데이트
     if (params.selectedCategories) {
       try {
         const categories = JSON.parse(params.selectedCategories as string);
-        console.log("파싱된 카테고리:", categories);
+        console.log("파라미터에서 카테고리 파싱:", categories);
         if (Array.isArray(categories)) {
+          console.log("카테고리 상태 업데이트:", categories);
           setCurrentCategories(categories);
           // AsyncStorage에 카테고리 저장
           saveCategoriesToStorage(categories);
@@ -72,25 +134,21 @@ export default function SettingsScreen() {
       try {
         const times = JSON.parse(params.selectedTimes as string);
         if (times.morning && times.evening) {
-          setCurrentTimes({
+          const newTimes = {
             morning: times.morning,
             evening: times.evening,
-          });
+          };
+          console.log("시간 상태 업데이트:", newTimes);
+          setCurrentTimes(newTimes);
+          // AsyncStorage에 시간 정보 저장
+          saveTimesToStorage(newTimes);
         }
       } catch (error) {
         console.error("시간 파라미터 파싱 오류:", error);
       }
     }
-  }, [params.selectedCategories, params.selectedTimes]);
 
-  // AsyncStorage에 카테고리 저장
-  const saveCategoriesToStorage = async (categories: string[]) => {
-    try {
-      await AsyncStorage.setItem("userCategories", JSON.stringify(categories));
-      console.log("카테고리가 저장되었습니다:", categories);
-    } catch (error) {
-      console.error("카테고리 저장 오류:", error);
-    }
+    console.log("파라미터 업데이트 처리 완료");
   };
 
   const handleCategoryChange = () => {

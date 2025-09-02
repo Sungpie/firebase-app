@@ -16,18 +16,14 @@ export default function SelectCategoryScreen() {
   const { fromSettings } = useLocalSearchParams<{ fromSettings?: string }>();
 
   const categories = [
-    "인기기사",
-    "정보세상",
-    "인권",
-    "노동",
-    "교육",
-    "복지",
-    "자립생활",
-    "정치",
-    "증권",
     "경제",
+    "증권",
+    "스포츠",
+    "연예",
+    "정치",
+    "IT",
     "사회",
-    "문화",
+    "오피니언",
   ];
 
   // 카테고리 선택/해제 및 최대 5개 제한

@@ -72,13 +72,17 @@ export default function TimeSelectScreen() {
           },
         });
       } else {
-        // 일반 플로우라면 confirmation 페이지로 이동
+        // 일반 플로우라면 관심뉴스 탭으로 이동하면서 시간 정보도 전달
         router.push({
-          pathname: "/confirmation" as any,
+          pathname: "/(tabs)",
           params: {
             categories: categories,
             morningTime: selectedMorningTime,
             eveningTime: selectedEveningTime,
+            selectedTimes: JSON.stringify({
+              morning: selectedMorningTime,
+              evening: selectedEveningTime,
+            }),
           },
         });
       }

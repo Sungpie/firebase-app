@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
 
 interface NewsItem {
   id: string;
@@ -24,15 +25,63 @@ interface NewsItem {
 }
 
 export default function InterestNewsScreen() {
+  const params = useLocalSearchParams();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
+  const [selectedTimes, setSelectedTimes] = useState<{
+    morning: string;
+    evening: string;
+  } | null>(null);
 
   // 저장된 카테고리 불러오기
   useEffect(() => {
     loadCategories();
   }, []);
+
+  // 파라미터에서 카테고리와 시간 정보 받아오기
+  useEffect(() => {
+    if (params.categories) {
+      try {
+        const categoriesFromParams = JSON.parse(params.categories as string);
+        setCategories(categoriesFromParams);
+        // AsyncStorage에 저장
+        saveCategoriesToStorage(categoriesFromParams);
+      } catch (error) {
+        console.error("카테고리 파라미터 파싱 오류:", error);
+      }
+    }
+
+    if (params.morningTime && params.eveningTime) {
+      const times = {
+        morning: params.morningTime as string,
+        evening: params.eveningTime as string,
+      };
+      setSelectedTimes(times);
+      // AsyncStorage에 시간 정보 저장
+      saveTimesToStorage(times);
+    }
+
+    // selectedTimes 파라미터도 처리 (JSON 문자열 형태)
+    if (params.selectedTimes) {
+      try {
+        const times = JSON.parse(params.selectedTimes as string);
+        if (times.morning && times.evening) {
+          setSelectedTimes(times);
+          // AsyncStorage에 시간 정보 저장
+          saveTimesToStorage(times);
+        }
+      } catch (error) {
+        console.error("시간 파라미터 파싱 오류:", error);
+      }
+    }
+  }, [
+    params.categories,
+    params.morningTime,
+    params.eveningTime,
+    params.selectedTimes,
+  ]);
 
   // 화면이 포커스될 때마다 카테고리 새로고침
   useFocusEffect(
@@ -60,13 +109,34 @@ export default function InterestNewsScreen() {
         setCategories(parsedCategories);
       } else {
         // 기본 카테고리 설정
-        const defaultCategories = ["인기기사", "경제", "사회"];
+        const defaultCategories = ["경제", "정치", "사회"];
         setCategories(defaultCategories);
       }
     } catch (error) {
       console.error("카테고리 로드 오류:", error);
       // 기본 카테고리로 설정
-      setCategories(["인기기사", "경제", "사회"]);
+      setCategories(["경제", "정치", "사회"]);
+    }
+  };
+
+  const saveCategoriesToStorage = async (categories: string[]) => {
+    try {
+      await AsyncStorage.setItem("userCategories", JSON.stringify(categories));
+      console.log("카테고리가 저장되었습니다:", categories);
+    } catch (error) {
+      console.error("카테고리 저장 오류:", error);
+    }
+  };
+
+  const saveTimesToStorage = async (times: {
+    morning: string;
+    evening: string;
+  }) => {
+    try {
+      await AsyncStorage.setItem("userTimes", JSON.stringify(times));
+      console.log("시간 정보가 저장되었습니다:", times);
+    } catch (error) {
+      console.error("시간 정보 저장 오류:", error);
     }
   };
 
@@ -229,6 +299,18 @@ export default function InterestNewsScreen() {
           </View>
         )}
 
+        {/* 선택된 시간 정보 표시 */}
+        {selectedTimes && (
+          <View style={styles.timeInfoSection}>
+            <Text style={styles.timeInfoTitle}>설정된 알림 시간</Text>
+            <View style={styles.timeInfoContainer}>
+              <Text style={styles.timeInfoText}>
+                아침: {selectedTimes.morning} | 저녁: {selectedTimes.evening}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* 새로고침 버튼 */}
         <View style={styles.refreshSection}>
           <Pressable
@@ -387,5 +469,31 @@ const styles = StyleSheet.create({
   },
   refreshingText: {
     color: "#C7C7CC",
+  },
+  timeInfoSection: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 20,
+    padding: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
+  },
+  timeInfoTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000000",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  timeInfoContainer: {
+    alignItems: "center",
+  },
+  timeInfoText: {
+    fontSize: 14,
+    color: "#007AFF",
+    fontWeight: "500",
+    textAlign: "center",
   },
 });
