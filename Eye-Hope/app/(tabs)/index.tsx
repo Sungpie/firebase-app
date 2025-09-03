@@ -5,7 +5,6 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Pressable,
   ActivityIndicator,
   Alert,
   RefreshControl,
@@ -310,26 +309,6 @@ export default function InterestNewsScreen() {
             </View>
           </View>
         )}
-
-        {/* 새로고침 버튼 */}
-        <View style={styles.refreshSection}>
-          <Pressable
-            style={styles.refreshButton}
-            onPress={handleRefresh}
-            disabled={refreshing}
-          >
-            <Ionicons
-              name="refresh"
-              size={20}
-              color={refreshing ? "#C7C7CC" : "#007AFF"}
-            />
-            <Text
-              style={[styles.refreshText, refreshing && styles.refreshingText]}
-            >
-              {refreshing ? "새로고침 중..." : "새로고침"}
-            </Text>
-          </Pressable>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -424,11 +403,11 @@ const styles = StyleSheet.create({
   newsCategory: {
     backgroundColor: "#007AFF",
     color: "#FFFFFF",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: "500",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    fontSize: 14,
+    fontWeight: "600",
   },
   newsTime: {
     fontSize: 12,
@@ -446,32 +425,7 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     fontStyle: "italic",
   },
-  refreshSection: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  refreshButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#007AFF",
-  },
-  refreshText: {
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#007AFF",
-  },
-  refreshingText: {
-    color: "#C7C7CC",
-  },
   timeInfoSection: {
-    marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 20,
     padding: 16,

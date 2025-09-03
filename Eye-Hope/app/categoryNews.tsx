@@ -22,6 +22,7 @@ interface NewsItem {
   publishedAt: string;
   url?: string;
   collectedAt?: string;
+  uniqueKey: string; // 고유 키 추가
 }
 
 export default function CategoryNewsScreen() {
@@ -77,6 +78,9 @@ export default function CategoryNewsScreen() {
         throw new Error(data.message || "데이터를 불러올 수 없습니다");
       }
 
+      // 고유한 키 생성을 위해 현재 시간과 페이지, 인덱스 조합
+      const timestamp = Date.now();
+
       const processedNews = newsArray.map((news: any, index: number) => ({
         id: news.id || news.articleId || `news-${pageNum}-${index}`,
         title: news.title || news.headline || "제목 없음",
@@ -90,6 +94,8 @@ export default function CategoryNewsScreen() {
           new Date().toISOString(),
         url: news.url || "",
         collectedAt: news.collectedAt || "",
+        // 완전히 고유한 키 생성: 카테고리 + 페이지 + 인덱스 + 타임스탬프
+        uniqueKey: `${category}-${pageNum}-${index}-${timestamp}`,
       }));
 
       if (isRefresh || pageNum === 0) {
@@ -132,10 +138,11 @@ export default function CategoryNewsScreen() {
 
   // 개발용 샘플 데이터 (백엔드 연결 실패 시 사용)
   const getFallbackNews = (categoryName: string): NewsItem[] => {
-    const fallbackData: { [key: string]: NewsItem[] } = {
+    const timestamp = Date.now();
+    const fallbackData: { [key: string]: Omit<NewsItem, "uniqueKey">[] } = {
       경제: [
         {
-          id: "1",
+          id: "fallback-1",
           source: "경제일보",
           title: "한국은행, 기준금리 동결 결정...인플레이션 우려 지속",
           content:
@@ -146,7 +153,7 @@ export default function CategoryNewsScreen() {
           collectedAt: "2024-01-15T10:00:00.000Z",
         },
         {
-          id: "2",
+          id: "fallback-2",
           source: "경제신문",
           title: "주요 기업들 실적 발표...반도체 업계 회복세 뚜렷",
           content:
@@ -159,7 +166,7 @@ export default function CategoryNewsScreen() {
       ],
       증권: [
         {
-          id: "3",
+          id: "fallback-3",
           source: "증권일보",
           title: "코스피 지수 2,500선 회복...기관 투자자 매수세 확대",
           content:
@@ -172,7 +179,7 @@ export default function CategoryNewsScreen() {
       ],
       스포츠: [
         {
-          id: "4",
+          id: "fallback-4",
           source: "스포츠신문",
           title: "손흥민, 프리미어리그 득점왕 경쟁 선두...토트넘 승리",
           content:
@@ -185,7 +192,7 @@ export default function CategoryNewsScreen() {
       ],
       연예: [
         {
-          id: "5",
+          id: "fallback-5",
           source: "연예신문",
           title: "BTS 지민, 솔로 앨범 발매...글로벌 차트 1위",
           content:
@@ -198,7 +205,7 @@ export default function CategoryNewsScreen() {
       ],
       정치: [
         {
-          id: "6",
+          id: "fallback-6",
           source: "정치일보",
           title: "국회, 예산안 처리 완료...내년도 정책 방향 확정",
           content:
@@ -211,7 +218,7 @@ export default function CategoryNewsScreen() {
       ],
       IT: [
         {
-          id: "7",
+          id: "fallback-7",
           source: "IT뉴스",
           title: "AI 기술 발전 가속화...한국 기업들 혁신 주도",
           content:
@@ -224,7 +231,7 @@ export default function CategoryNewsScreen() {
       ],
       사회: [
         {
-          id: "8",
+          id: "fallback-8",
           source: "사회신문",
           title: "기후변화 대응 정책 강화...탄소중립 목표 달성 노력",
           content:
@@ -237,7 +244,7 @@ export default function CategoryNewsScreen() {
       ],
       오피니언: [
         {
-          id: "9",
+          id: "fallback-9",
           source: "오피니언지",
           title: "[사설] 디지털 전환 시대, 교육의 방향성",
           content:
@@ -250,7 +257,11 @@ export default function CategoryNewsScreen() {
       ],
     };
 
-    return fallbackData[categoryName] || [];
+    const baseNews = fallbackData[categoryName] || [];
+    return baseNews.map((news, index) => ({
+      ...news,
+      uniqueKey: `fallback-${categoryName}-${index}-${timestamp}`,
+    }));
   };
 
   const handleRefresh = async () => {
@@ -348,7 +359,7 @@ export default function CategoryNewsScreen() {
 
               {newsData.map((news) => (
                 <Pressable
-                  key={news.id}
+                  key={news.uniqueKey} // uniqueKey 사용으로 중복 방지
                   style={({ pressed }) => [
                     styles.newsCard,
                     pressed && styles.pressedNewsCard,
@@ -531,11 +542,11 @@ const styles = StyleSheet.create({
   newsCategory: {
     backgroundColor: "#007AFF",
     color: "#FFFFFF",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: "500",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    fontSize: 14,
+    fontWeight: "600",
   },
   newsTime: {
     fontSize: 12,
