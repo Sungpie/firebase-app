@@ -23,6 +23,22 @@ interface NewsItem {
   publishedAt: string;
 }
 
+// 카테고리별 색상 매핑
+const getCategoryColor = (category: string): string => {
+  const colorMap: { [key: string]: string } = {
+    경제: "#FF6B6B",
+    증권: "#4ECDC4",
+    스포츠: "#45B7D1",
+    연예: "#96CEB4",
+    정치: "#FECA57",
+    IT: "#48CAE4",
+    사회: "#FF9FF3",
+    오피니언: "#54A0FF",
+  };
+
+  return colorMap[category] || "#007AFF"; // 기본색상
+};
+
 export default function InterestNewsScreen() {
   const params = useLocalSearchParams();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
@@ -278,7 +294,14 @@ export default function InterestNewsScreen() {
             {newsData.map((news) => (
               <View key={news.id} style={styles.newsCard}>
                 <View style={styles.newsHeader}>
-                  <Text style={styles.newsCategory}>{news.category}</Text>
+                  <Text
+                    style={[
+                      styles.newsCategory,
+                      { backgroundColor: getCategoryColor(news.category) },
+                    ]}
+                  >
+                    {news.category}
+                  </Text>
                   <Text style={styles.newsTime}>
                     {formatTimeAgo(news.publishedAt)}
                   </Text>
@@ -401,13 +424,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   newsCategory: {
-    backgroundColor: "#007AFF",
     color: "#FFFFFF",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    fontSize: 14,
-    fontWeight: "600",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    fontSize: 16,
+    fontWeight: "700",
+    overflow: "hidden",
   },
   newsTime: {
     fontSize: 12,
