@@ -176,59 +176,59 @@ export default function SettingsScreen() {
       <View style={styles.userInfoSection}>
         <Text style={styles.userName}>사용자님</Text>
         <Text style={styles.userQuestion}>
-          일상생활 속, eye hope가 알려주는 오늘의 뉴스 기사는 어떠셨나요?
+          {"일상생활 속, eye hope이 알려주는\n오늘의 뉴스 기사는 어떠셨나요?"}
         </Text>
       </View>
 
       {/* 현재 관심뉴스 섹션 */}
       <TouchableOpacity
-        style={styles.interestNewsSection}
+        style={[styles.interestNewsSection, { alignItems: "center" }]}
         onPress={handleCategoryChange}
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel="관심 뉴스를 변경하려면 탭하세요"
         accessibilityHint="관심 뉴스 카테고리를 수정할 수 있는 페이지로 이동합니다"
       >
-        <Text style={styles.sectionTitle}>현재 관심뉴스</Text>
-        <View style={styles.categoriesContainer}>
+        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>현재 관심뉴스</Text>
+        <View style={[styles.categoriesContainer, { justifyContent: "center" }]}>
           {currentCategories.map((category, index) => (
             <View key={index} style={styles.categoryTag}>
-              <Text style={styles.categoryText}>{category}</Text>
+              <Text style={[styles.categoryText, { textAlign: "center" }]}>{category}</Text>
             </View>
           ))}
         </View>
-        <Text style={styles.questionText}>
+        <Text style={[styles.questionText, { textAlign: "center" }]}>
           관심뉴스를 수정 / 변경하시겠어요?
         </Text>
-        <Text style={styles.instructionText}>
+        <Text style={[styles.instructionText, { textAlign: "center" }]}>
           변경을 원하신다면 두 번 눌러주세요.
         </Text>
       </TouchableOpacity>
 
       {/* 시간대 변경 섹션 */}
       <TouchableOpacity
-        style={styles.timeChangeSection}
+        style={[styles.timeChangeSection, { alignItems: "center" }]}
         onPress={handleTimeChange}
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel="시간대를 변경하려면 탭하세요"
         accessibilityHint="뉴스 알림을 받을 시간대를 수정할 수 있는 페이지로 이동합니다"
       >
-        <Text style={styles.sectionTitle}>시간 대 변경</Text>
-        <View style={styles.timeInfoContainer}>
-          <Text style={styles.timeInfoText}>현재 시간 대는</Text>
-          <View style={styles.timeButtonsContainer}>
+        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>시간 대 변경</Text>
+        <View style={[styles.timeInfoContainer, { alignItems: "center" }]}>
+          <Text style={[styles.timeInfoText, { textAlign: "center" }]}>현재 시간 대는</Text>
+          <View style={[styles.timeButtonsContainer, { alignItems: "center", flexDirection: "row", justifyContent: "center" }]}>
             <View style={styles.timeButton}>
-              <Text style={styles.timeButtonText}>{currentTimes.morning}</Text>
+              <Text style={[styles.timeButtonText, { textAlign: "center" }]}>{currentTimes.morning}</Text>
             </View>
-            <Text style={styles.timeInfoText}>와</Text>
+            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>와</Text>
             <View style={styles.timeButton}>
-              <Text style={styles.timeButtonText}>{currentTimes.evening}</Text>
+              <Text style={[styles.timeButtonText, { textAlign: "center" }]}>{currentTimes.evening}</Text>
             </View>
-            <Text style={styles.timeInfoText}>에요.</Text>
+            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>에요.</Text>
           </View>
         </View>
-        <Text style={styles.instructionText}>
+        <Text style={[styles.instructionText, { textAlign: "center" }]}>
           시간대 변경을 원하신다면 두 번 눌러주세요.
         </Text>
       </TouchableOpacity>
