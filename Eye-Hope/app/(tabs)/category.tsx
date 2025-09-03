@@ -36,7 +36,7 @@ export default function CategoryScreen() {
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 */}
       <View style={styles.header}>
-        <Text style={styles.title}>카테고리</Text>
+        <Text style={[styles.title, { textAlign: "center" }]}>카테고리</Text>
         <Text style={styles.subtitle}>
           원하는 카테고리를 선택해서 최신 뉴스를 확인하세요
         </Text>
