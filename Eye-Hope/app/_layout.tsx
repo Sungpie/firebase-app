@@ -58,6 +58,13 @@ export default function RootLayout() {
             title: "관심 뉴스",
           }}
         />
+        <Stack.Screen
+          name="categoryNews"
+          options={{
+            headerShown: false,
+            title: "카테고리별 뉴스",
+          }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

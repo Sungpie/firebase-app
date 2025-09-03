@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,33 +7,29 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function CategoryScreen() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const router = useRouter();
 
   const categories = [
-    "경제",
-    "증권",
-    "스포츠",
-    "연예",
-    "정치",
-    "IT",
-    "사회",
-    "오피니언",
+    { name: "경제", icon: "trending-up" as const, color: "#FF6B6B" },
+    { name: "증권", icon: "bar-chart" as const, color: "#4ECDC4" },
+    { name: "스포츠", icon: "football" as const, color: "#45B7D1" },
+    { name: "연예", icon: "star" as const, color: "#96CEB4" },
+    { name: "정치", icon: "people" as const, color: "#FECA57" },
+    { name: "IT", icon: "laptop" as const, color: "#48CAE4" },
+    { name: "사회", icon: "home" as const, color: "#FF9FF3" },
+    { name: "오피니언", icon: "chatbubble" as const, color: "#54A0FF" },
   ];
 
-  const handleCategorySelect = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter((c) => c !== category));
-    } else {
-      if (selectedCategories.length < 5) {
-        setSelectedCategories([...selectedCategories, category]);
-      } else {
-        // 5개 초과 선택 방지
-        alert("최대 5개까지 선택할 수 있어요!");
-      }
-    }
+  const handleCategoryPress = (category: string) => {
+    console.log(`${category} 카테고리 선택됨`);
+    router.push({
+      pathname: "/categoryNews",
+      params: { category: category },
+    });
   };
 
   return (
@@ -42,57 +38,55 @@ export default function CategoryScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>카테고리</Text>
         <Text style={styles.subtitle}>
-          관심 있는 뉴스 분야를 선택하세요 (최대 5개)
+          원하는 카테고리를 선택해서 최신 뉴스를 확인하세요
         </Text>
       </View>
 
       {/* 카테고리 그리드 */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.categoriesGrid}>
-          {categories.map((category) => {
-            const isSelected = selectedCategories.includes(category);
-            return (
-              <Pressable
-                key={category}
-                style={[
-                  styles.categoryButton,
-                  isSelected && styles.selectedCategoryButton,
-                ]}
-                onPress={() => handleCategorySelect(category)}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    isSelected && styles.selectedCategoryText,
-                  ]}
-                >
-                  {category}
-                </Text>
-                {isSelected && (
-                  <View style={styles.checkIcon}>
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
+          {categories.map((category) => (
+            <Pressable
+              key={category.name}
+              style={({ pressed }) => [
+                styles.categoryButton,
+                { backgroundColor: category.color },
+                pressed && styles.pressedCategoryButton,
+              ]}
+              onPress={() => handleCategoryPress(category.name)}
+              accessibilityLabel={`${category.name} 카테고리`}
+              accessibilityRole="button"
+              accessibilityHint={`${category.name} 카테고리의 뉴스를 보려면 두 번 탭하세요`}
+            >
+              <View style={styles.categoryContent}>
+                <Ionicons 
+                  name={category.icon} 
+                  size={32} 
+                  color="#FFFFFF" 
+                  style={styles.categoryIcon}
+                />
+                <Text style={styles.categoryText}>{category.name}</Text>
+                <View style={styles.arrowIcon}>
+                  <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+                </View>
+              </View>
+            </Pressable>
+          ))}
         </View>
 
-        {/* 선택된 카테고리 요약 */}
-        {selectedCategories.length > 0 && (
-          <View style={styles.summarySection}>
-            <Text style={styles.summaryTitle}>
-              선택된 카테고리 ({selectedCategories.length}/5)
-            </Text>
-            <View style={styles.selectedCategoriesList}>
-              {selectedCategories.map((category) => (
-                <View key={category} style={styles.selectedCategoryTag}>
-                  <Text style={styles.selectedCategoryTagText}>{category}</Text>
-                </View>
-              ))}
+        {/* 안내 메시지 */}
+        <View style={styles.infoSection}>
+          <View style={styles.infoCard}>
+            <Ionicons name="information-circle" size={24} color="#007AFF" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoTitle}>카테고리별 뉴스 보기</Text>
+              <Text style={styles.infoDescription}>
+                각 카테고리를 터치하면 해당 분야의 최신 뉴스를 확인할 수 있습니다.
+                실시간으로 업데이트되는 뉴스를 놓치지 마세요!
+              </Text>
             </View>
           </View>
-        )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -134,11 +128,58 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     width: "48%",
+    height: 120,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  pressedCategoryButton: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
+  },
+  categoryContent: {
+    flex: 1,
+    padding: 16,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  categoryIcon: {
+    marginBottom: 8,
+  },
+  categoryText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    textAlign: "center",
+  },
+  arrowIcon: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  infoSection: {
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  infoCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
-    alignItems: "center",
+    flexDirection: "row",
+    alignItems: "flex-start",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -147,61 +188,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    position: "relative",
   },
-  selectedCategoryButton: {
-    backgroundColor: "#007AFF",
+  infoTextContainer: {
+    flex: 1,
+    marginLeft: 12,
   },
-  categoryText: {
+  infoTitle: {
     fontSize: 16,
-    fontWeight: "500",
-    color: "#000000",
-    textAlign: "center",
-  },
-  selectedCategoryText: {
-    color: "#FFFFFF",
-  },
-  checkIcon: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "#34C759",
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  summarySection: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  summaryTitle: {
-    fontSize: 18,
     fontWeight: "600",
     color: "#000000",
-    marginBottom: 16,
-    textAlign: "center",
+    marginBottom: 4,
   },
-  selectedCategoriesList: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-  },
-  selectedCategoryTag: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginHorizontal: 4,
-    marginBottom: 8,
-  },
-  selectedCategoryTagText: {
-    color: "#FFFFFF",
+  infoDescription: {
     fontSize: 14,
-    fontWeight: "500",
+    color: "#666666",
+    lineHeight: 20,
   },
 });
