@@ -140,10 +140,10 @@ const styles = StyleSheet.create({
   diamondIcon: {
     width: 120,
     height: 60,
-    backgroundColor: "#87CEEB", // 연한 파란색
+    backgroundColor: "#276ADC", // 연한 파란색
     justifyContent: "center",
     alignItems: "center",
-    transform: [{ rotate: "45deg" }],
+    borderRadius: 16,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: {
@@ -154,11 +154,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   diamondText: {
-    fontSize: 14,
+    fontSize: 24,
     fontWeight: "500",
-    color: "#000000",
+    color: "white",
     textAlign: "center",
-    transform: [{ rotate: "-45deg" }], // 텍스트를 원래 방향으로
+    //transform: [{ rotate: "-45deg" }], // 텍스트를 원래 방향으로
     width: 80, // 텍스트 영역 제한
   },
   summaryContainer: {
@@ -210,16 +210,16 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   confirmButtonText: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: "600",
     color: "#000000",
     textAlign: "center",
   },
   modifyButtonText: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "600",
     color: "#000000",
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 28,
   },
 });
