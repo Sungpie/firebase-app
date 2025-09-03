@@ -179,15 +179,15 @@ export default function InterestNewsScreen() {
           const data = await response.json();
           console.log(`${category} 응답 데이터:`, data);
 
-          // 데이터 구조 확인 및 변환
-          if (data && Array.isArray(data)) {
-            return data;
-          } else if (data && Array.isArray(data.data)) {
+          // API 응답 구조 확인 및 변환
+          if (data.success && Array.isArray(data.data)) {
             console.log(
-              `${category} 카테고리: data 필드에서 뉴스 찾음, 개수:`,
+              `${category} 카테고리: success/data 필드에서 뉴스 찾음, 개수:`,
               data.data.length
             );
             return data.data;
+          } else if (data && Array.isArray(data)) {
+            return data;
           } else if (data && Array.isArray(data.content)) {
             return data.content;
           } else if (data && Array.isArray(data.articles)) {
@@ -212,7 +212,8 @@ export default function InterestNewsScreen() {
       const flattenedNews = allNews.flat().map((news, index) => ({
         id: news.id || news.articleId || `news-${index}`,
         title: news.title || news.headline || "제목 없음",
-        content: news.content || news.summary || "내용 없음",
+        content:
+          news.content || news.summary || news.description || "내용 없음",
         category: news.category || news.section || "기타",
         source: news.source || news.publisher || "출처 없음",
         publishedAt:
@@ -307,6 +308,8 @@ export default function InterestNewsScreen() {
                   </Text>
                 </View>
                 <Text style={styles.newsTitle}>{news.title}</Text>
+                {/* 뉴스 내용 추가 */}
+                <Text style={styles.newsContent}>{news.content}</Text>
                 <Text style={styles.newsSource}>{news.source}</Text>
               </View>
             ))}
@@ -437,11 +440,17 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
   },
   newsTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     color: "#000000",
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  newsContent: {
+    fontSize: 15,
+    color: "#333333",
     lineHeight: 22,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   newsSource: {
     fontSize: 14,
