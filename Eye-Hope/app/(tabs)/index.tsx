@@ -256,7 +256,7 @@ export default function InterestNewsScreen() {
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 */}
       <View style={styles.header}>
-        <Text style={styles.title}>관심뉴스</Text>
+        <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
         <Text style={styles.subtitle}>
           {categories.length > 0
             ? `${categories.join(", ")} 카테고리의 최신 뉴스입니다`

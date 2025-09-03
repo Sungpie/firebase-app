@@ -214,9 +214,9 @@ export default function SettingsScreen() {
         accessibilityLabel="시간대를 변경하려면 탭하세요"
         accessibilityHint="뉴스 알림을 받을 시간대를 수정할 수 있는 페이지로 이동합니다"
       >
-        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>시간 대 변경</Text>
+        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>시간대 변경</Text>
         <View style={[styles.timeInfoContainer, { alignItems: "center" }]}>
-          <Text style={[styles.timeInfoText, { textAlign: "center" }]}>현재 시간 대는</Text>
+          <Text style={[styles.timeInfoText, { textAlign: "center" }]}>현재 시간대는</Text>
           <View style={[styles.timeButtonsContainer, { alignItems: "center", flexDirection: "row", justifyContent: "center" }]}>
             <View style={styles.timeButton}>
               <Text style={[styles.timeButtonText, { textAlign: "center" }]}>{currentTimes.morning}</Text>
