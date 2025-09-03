@@ -11,6 +11,22 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
+// 카테고리별 색상 매핑 함수 추가
+const getCategoryColor = (category: string): string => {
+  const colorMap: { [key: string]: string } = {
+    경제: "#FF6B6B",
+    증권: "#4ECDC4",
+    스포츠: "#45B7D1",
+    연예: "#96CEB4",
+    정치: "#FECA57",
+    IT: "#48CAE4",
+    사회: "#FF9FF3",
+    오피니언: "#54A0FF",
+  };
+
+  return colorMap[category] || "#007AFF"; // 기본색상
+};
+
 export default function SettingsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -189,11 +205,23 @@ export default function SettingsScreen() {
         accessibilityLabel="관심 뉴스를 변경하려면 탭하세요"
         accessibilityHint="관심 뉴스 카테고리를 수정할 수 있는 페이지로 이동합니다"
       >
-        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>현재 관심뉴스</Text>
-        <View style={[styles.categoriesContainer, { justifyContent: "center" }]}>
+        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
+          현재 관심뉴스
+        </Text>
+        <View
+          style={[styles.categoriesContainer, { justifyContent: "center" }]}
+        >
           {currentCategories.map((category, index) => (
-            <View key={index} style={styles.categoryTag}>
-              <Text style={[styles.categoryText, { textAlign: "center" }]}>{category}</Text>
+            <View
+              key={index}
+              style={[
+                styles.categoryTag,
+                { backgroundColor: getCategoryColor(category) },
+              ]}
+            >
+              <Text style={[styles.categoryText, { textAlign: "center" }]}>
+                {category}
+              </Text>
             </View>
           ))}
         </View>
@@ -214,18 +242,39 @@ export default function SettingsScreen() {
         accessibilityLabel="시간대를 변경하려면 탭하세요"
         accessibilityHint="뉴스 알림을 받을 시간대를 수정할 수 있는 페이지로 이동합니다"
       >
-        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>시간대 변경</Text>
+        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
+          시간대 변경
+        </Text>
         <View style={[styles.timeInfoContainer, { alignItems: "center" }]}>
-          <Text style={[styles.timeInfoText, { textAlign: "center" }]}>현재 시간대는</Text>
-          <View style={[styles.timeButtonsContainer, { alignItems: "center", flexDirection: "row", justifyContent: "center" }]}>
+          <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
+            현재 시간대는
+          </Text>
+          <View
+            style={[
+              styles.timeButtonsContainer,
+              {
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+              },
+            ]}
+          >
             <View style={styles.timeButton}>
-              <Text style={[styles.timeButtonText, { textAlign: "center" }]}>{currentTimes.morning}</Text>
+              <Text style={[styles.timeButtonText, { textAlign: "center" }]}>
+                {currentTimes.morning}
+              </Text>
             </View>
-            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>와</Text>
+            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
+              와
+            </Text>
             <View style={styles.timeButton}>
-              <Text style={[styles.timeButtonText, { textAlign: "center" }]}>{currentTimes.evening}</Text>
+              <Text style={[styles.timeButtonText, { textAlign: "center" }]}>
+                {currentTimes.evening}
+              </Text>
             </View>
-            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>에요.</Text>
+            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
+              에요.
+            </Text>
           </View>
         </View>
         <Text style={[styles.instructionText, { textAlign: "center" }]}>
@@ -298,7 +347,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryTag: {
-    backgroundColor: "#007AFF",
+    // backgroundColor는 동적으로 설정됩니다
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
