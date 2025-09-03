@@ -8,6 +8,7 @@ import {
   Pressable,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,8 @@ interface NewsItem {
   category: string;
   source: string;
   publishedAt: string;
+  url?: string;
+  collectedAt?: string;
 }
 
 export default function CategoryNewsScreen() {
@@ -44,10 +47,11 @@ export default function CategoryNewsScreen() {
         setLoading(true);
       }
 
-      const url = `http://13.124.111.205:8080/api/news/search?keyword=${encodeURIComponent(
+      // API 명세서에 따른 올바른 엔드포인트 사용
+      const url = `http://13.124.111.205:8080/api/news/category/${encodeURIComponent(
         category
-      )}&page=${pageNum}&size=10`;
-      
+      )}?page=${pageNum}&size=10`;
+
       console.log(`${category} 카테고리 뉴스 API 호출:`, url);
 
       const response = await fetch(url);
@@ -60,19 +64,17 @@ export default function CategoryNewsScreen() {
       const data = await response.json();
       console.log(`${category} 응답 데이터:`, data);
 
-      // 데이터 구조 확인 및 변환
+      // API 명세서에 따른 응답 구조 처리 (success, message, data)
       let newsArray = [];
-      if (data && Array.isArray(data)) {
-        newsArray = data;
-      } else if (data && Array.isArray(data.data)) {
+
+      if (data.success && Array.isArray(data.data)) {
         newsArray = data.data;
-      } else if (data && Array.isArray(data.content)) {
-        newsArray = data.content;
-      } else if (data && Array.isArray(data.articles)) {
-        newsArray = data.articles;
+      } else if (Array.isArray(data)) {
+        // 직접 배열이 반환되는 경우를 위한 fallback
+        newsArray = data;
       } else {
         console.log(`${category} 카테고리: 예상치 못한 데이터 구조:`, data);
-        newsArray = [];
+        throw new Error(data.message || "데이터를 불러올 수 없습니다");
       }
 
       const processedNews = newsArray.map((news: any, index: number) => ({
@@ -86,6 +88,8 @@ export default function CategoryNewsScreen() {
           news.createdAt ||
           news.publishDate ||
           new Date().toISOString(),
+        url: news.url || "",
+        collectedAt: news.collectedAt || "",
       }));
 
       if (isRefresh || pageNum === 0) {
@@ -100,10 +104,153 @@ export default function CategoryNewsScreen() {
       setPage(pageNum);
     } catch (error) {
       console.error(`${category} 카테고리 뉴스 가져오기 오류:`, error);
+
+      // 사용자에게 친화적인 에러 메시지 표시
+      if (error instanceof Error) {
+        Alert.alert(
+          "오류",
+          `뉴스를 불러오는 중 문제가 발생했습니다: ${error.message}`,
+          [
+            {
+              text: "확인",
+              onPress: () => {},
+            },
+          ]
+        );
+      }
+
+      // 개발 중에는 샘플 데이터 표시
+      if (pageNum === 0) {
+        const fallbackNews = getFallbackNews(category);
+        setNewsData(fallbackNews);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
+  };
+
+  // 개발용 샘플 데이터 (백엔드 연결 실패 시 사용)
+  const getFallbackNews = (categoryName: string): NewsItem[] => {
+    const fallbackData: { [key: string]: NewsItem[] } = {
+      경제: [
+        {
+          id: "1",
+          source: "경제일보",
+          title: "한국은행, 기준금리 동결 결정...인플레이션 우려 지속",
+          content:
+            "한국은행이 오늘 기준금리를 현재 수준으로 동결하기로 결정했습니다. 글로벌 인플레이션 우려와 경제 불확실성이 지속되면서 신중한 정책 기조를 유지한다는 방침입니다.",
+          publishedAt: "2024-01-15T10:00:00.000Z",
+          url: "https://example.com/news/1",
+          category: "경제",
+          collectedAt: "2024-01-15T10:00:00.000Z",
+        },
+        {
+          id: "2",
+          source: "경제신문",
+          title: "주요 기업들 실적 발표...반도체 업계 회복세 뚜렷",
+          content:
+            "삼성전자, SK하이닉스 등 주요 반도체 기업들이 4분기 실적을 발표했습니다. AI 수요 증가로 인한 반도체 업계 회복세가 뚜렷하게 나타나고 있습니다.",
+          publishedAt: "2024-01-15T09:00:00.000Z",
+          url: "https://example.com/news/2",
+          category: "경제",
+          collectedAt: "2024-01-15T09:00:00.000Z",
+        },
+      ],
+      증권: [
+        {
+          id: "3",
+          source: "증권일보",
+          title: "코스피 지수 2,500선 회복...기관 투자자 매수세 확대",
+          content:
+            "코스피 지수가 2,500선을 회복했습니다. 기관 투자자들의 매수세가 확대되면서 시장 낙관론이 강화되고 있습니다.",
+          publishedAt: "2024-01-15T08:00:00.000Z",
+          url: "https://example.com/news/3",
+          category: "증권",
+          collectedAt: "2024-01-15T08:00:00.000Z",
+        },
+      ],
+      스포츠: [
+        {
+          id: "4",
+          source: "스포츠신문",
+          title: "손흥민, 프리미어리그 득점왕 경쟁 선두...토트넘 승리",
+          content:
+            "손흥민이 프리미어리그 득점왕 경쟁에서 선두를 달리고 있습니다. 오늘 경기에서도 득점을 기록하며 토트넘의 승리에 기여했습니다.",
+          publishedAt: "2024-01-15T06:00:00.000Z",
+          url: "https://example.com/news/4",
+          category: "스포츠",
+          collectedAt: "2024-01-15T06:00:00.000Z",
+        },
+      ],
+      연예: [
+        {
+          id: "5",
+          source: "연예신문",
+          title: "BTS 지민, 솔로 앨범 발매...글로벌 차트 1위",
+          content:
+            "BTS 지민의 솔로 앨범이 발매되어 글로벌 차트에서 1위를 기록했습니다. 전 세계 팬들의 뜨거운 반응을 받고 있습니다.",
+          publishedAt: "2024-01-15T04:00:00.000Z",
+          url: "https://example.com/news/5",
+          category: "연예",
+          collectedAt: "2024-01-15T04:00:00.000Z",
+        },
+      ],
+      정치: [
+        {
+          id: "6",
+          source: "정치일보",
+          title: "국회, 예산안 처리 완료...내년도 정책 방향 확정",
+          content:
+            "국회에서 내년도 예산안 처리를 완료했습니다. 주요 정책 방향과 재정 운용 계획이 확정되었습니다.",
+          publishedAt: "2024-01-15T02:00:00.000Z",
+          url: "https://example.com/news/6",
+          category: "정치",
+          collectedAt: "2024-01-15T02:00:00.000Z",
+        },
+      ],
+      IT: [
+        {
+          id: "7",
+          source: "IT뉴스",
+          title: "AI 기술 발전 가속화...한국 기업들 혁신 주도",
+          content:
+            "AI 기술 발전이 가속화되고 있습니다. 한국 기업들이 AI 분야에서 혁신을 주도하며 글로벌 경쟁력을 강화하고 있습니다.",
+          publishedAt: "2024-01-15T00:00:00.000Z",
+          url: "https://example.com/news/7",
+          category: "IT",
+          collectedAt: "2024-01-15T00:00:00.000Z",
+        },
+      ],
+      사회: [
+        {
+          id: "8",
+          source: "사회신문",
+          title: "기후변화 대응 정책 강화...탄소중립 목표 달성 노력",
+          content:
+            "정부가 기후변화 대응 정책을 강화하고 있습니다. 2050년 탄소중립 목표 달성을 위한 다양한 정책을 추진하고 있습니다.",
+          publishedAt: "2024-01-14T22:00:00.000Z",
+          url: "https://example.com/news/8",
+          category: "사회",
+          collectedAt: "2024-01-14T22:00:00.000Z",
+        },
+      ],
+      오피니언: [
+        {
+          id: "9",
+          source: "오피니언지",
+          title: "[사설] 디지털 전환 시대, 교육의 방향성",
+          content:
+            "디지털 전환 시대를 맞아 교육의 방향성에 대한 논의가 활발합니다. 미래 인재 양성을 위한 교육 시스템의 혁신이 필요합니다.",
+          publishedAt: "2024-01-14T20:00:00.000Z",
+          url: "https://example.com/news/9",
+          category: "오피니언",
+          collectedAt: "2024-01-14T20:00:00.000Z",
+        },
+      ],
+    };
+
+    return fallbackData[categoryName] || [];
   };
 
   const handleRefresh = async () => {
@@ -133,6 +280,15 @@ export default function CategoryNewsScreen() {
 
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}일 전`;
+  };
+
+  const handleNewsPress = (news: NewsItem) => {
+    console.log("뉴스 클릭:", news.title);
+    // 뉴스 상세 페이지로 이동하거나 외부 링크 열기
+    if (news.url) {
+      // 외부 브라우저에서 뉴스 원문 열기 (필요시 구현)
+      console.log("뉴스 URL:", news.url);
+    }
   };
 
   if (loading && newsData.length === 0) {
@@ -191,7 +347,17 @@ export default function CategoryNewsScreen() {
               </Text>
 
               {newsData.map((news) => (
-                <View key={news.id} style={styles.newsCard}>
+                <Pressable
+                  key={news.id}
+                  style={({ pressed }) => [
+                    styles.newsCard,
+                    pressed && styles.pressedNewsCard,
+                  ]}
+                  onPress={() => handleNewsPress(news)}
+                  accessibilityLabel={`${news.title} 뉴스 기사`}
+                  accessibilityRole="button"
+                  accessibilityHint="뉴스를 자세히 보려면 두 번 탭하세요"
+                >
                   <View style={styles.newsHeader}>
                     <Text style={styles.newsCategory}>{news.category}</Text>
                     <Text style={styles.newsTime}>
@@ -204,8 +370,13 @@ export default function CategoryNewsScreen() {
                   <Text style={styles.newsContent} numberOfLines={2}>
                     {news.content}
                   </Text>
-                  <Text style={styles.newsSource}>{news.source}</Text>
-                </View>
+                  <View style={styles.newsFooter}>
+                    <Text style={styles.newsSource}>{news.source}</Text>
+                    {news.url && (
+                      <Ionicons name="link-outline" size={14} color="#8E8E93" />
+                    )}
+                  </View>
+                </Pressable>
               ))}
             </View>
 
@@ -213,7 +384,9 @@ export default function CategoryNewsScreen() {
             {loading && (
               <View style={styles.loadMoreContainer}>
                 <ActivityIndicator size="small" color="#007AFF" />
-                <Text style={styles.loadMoreText}>더 많은 뉴스를 불러오는 중...</Text>
+                <Text style={styles.loadMoreText}>
+                  더 많은 뉴스를 불러오는 중...
+                </Text>
               </View>
             )}
 
@@ -229,8 +402,13 @@ export default function CategoryNewsScreen() {
             <Ionicons name="newspaper-outline" size={64} color="#C7C7CC" />
             <Text style={styles.emptyTitle}>뉴스가 없습니다</Text>
             <Text style={styles.emptySubtitle}>
-              {category} 관련 뉴스를 찾을 수 없습니다.{"\n"}새로고침을 시도해보세요.
+              {category} 관련 뉴스를 찾을 수 없습니다.{"\n"}새로고침을
+              시도해보세요.
             </Text>
+            <Pressable style={styles.retryButton} onPress={handleRefresh}>
+              <Ionicons name="refresh" size={20} color="#007AFF" />
+              <Text style={styles.retryButtonText}>다시 시도</Text>
+            </Pressable>
           </View>
         )}
       </ScrollView>
@@ -299,6 +477,23 @@ const styles = StyleSheet.create({
     color: "#C7C7CC",
     textAlign: "center",
     lineHeight: 22,
+    marginBottom: 20,
+  },
+  retryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#007AFF",
+  },
+  retryButtonText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#007AFF",
   },
   newsSection: {
     marginTop: 20,
@@ -322,6 +517,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  pressedNewsCard: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
   newsHeader: {
     flexDirection: "row",
@@ -354,6 +553,11 @@ const styles = StyleSheet.create({
     color: "#666666",
     lineHeight: 20,
     marginBottom: 8,
+  },
+  newsFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   newsSource: {
     fontSize: 12,

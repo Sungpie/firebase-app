@@ -59,10 +59,10 @@ export default function CategoryScreen() {
               accessibilityHint={`${category.name} 카테고리의 뉴스를 보려면 두 번 탭하세요`}
             >
               <View style={styles.categoryContent}>
-                <Ionicons 
-                  name={category.icon} 
-                  size={32} 
-                  color="#FFFFFF" 
+                <Ionicons
+                  name={category.icon}
+                  size={32}
+                  color="#FFFFFF"
                   style={styles.categoryIcon}
                 />
                 <Text style={styles.categoryText}>{category.name}</Text>
@@ -81,8 +81,8 @@ export default function CategoryScreen() {
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoTitle}>카테고리별 뉴스 보기</Text>
               <Text style={styles.infoDescription}>
-                각 카테고리를 터치하면 해당 분야의 최신 뉴스를 확인할 수 있습니다.
-                실시간으로 업데이트되는 뉴스를 놓치지 마세요!
+                각 카테고리를 터치하면 해당 분야의 최신 뉴스를 확인할 수
+                있습니다. 실시간으로 업데이트되는 뉴스를 놓치지 마세요!
               </Text>
             </View>
           </View>
