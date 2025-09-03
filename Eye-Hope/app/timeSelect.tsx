@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TimeSelectScreen() {
   const { categories, fromSettings } = useLocalSearchParams<{
@@ -56,7 +57,17 @@ export default function TimeSelectScreen() {
     setSelectedEveningTime(time);
   };
 
-  const handleComplete = () => {
+  // 설정 완료 플래그 저장 함수
+  const saveSetupCompleted = async () => {
+    try {
+      await AsyncStorage.setItem("setupCompleted", "true");
+      console.log("설정 완료 플래그가 저장되었습니다");
+    } catch (error) {
+      console.error("설정 완료 플래그 저장 오류:", error);
+    }
+  };
+
+  const handleComplete = async () => {
     if (selectedMorningTime && selectedEveningTime) {
       // fromSettings 파라미터 확인
       if (fromSettings === "true") {
@@ -72,7 +83,10 @@ export default function TimeSelectScreen() {
           },
         });
       } else {
-        // 일반 플로우라면 관심뉴스 탭으로 이동하면서 시간 정보도 전달
+        // 일반 플로우(초기 설정)라면 설정 완료 플래그 저장
+        await saveSetupCompleted();
+        
+        // 관심뉴스 탭으로 이동하면서 시간 정보도 전달
         router.push({
           pathname: "/(tabs)",
           params: {
