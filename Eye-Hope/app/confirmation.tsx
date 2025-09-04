@@ -87,7 +87,7 @@ export default function ConfirmationScreen() {
           accessibilityRole="button"
           accessibilityHint="선택한 카테고리가 맞다면 두 번 탭하세요"
         >
-          <Text style={styles.confirmButtonText}>맞아요.</Text>
+          <Text style={styles.confirmButtonText}>맞아요</Text>
         </Pressable>
 
         <Pressable
@@ -101,7 +101,7 @@ export default function ConfirmationScreen() {
           accessibilityRole="button"
           accessibilityHint="카테고리를 수정하려면 두 번 탭하세요"
         >
-          <Text style={styles.modifyButtonText}>아니에요. 수정할래요.</Text>
+          <Text style={styles.modifyButtonText}>아니에요 수정할래요</Text>
         </Pressable>
       </View>
     </SafeAreaView>
