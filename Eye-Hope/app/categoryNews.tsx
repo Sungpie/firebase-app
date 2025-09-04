@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Linking, // Linking import 추가
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -309,12 +310,20 @@ export default function CategoryNewsScreen() {
     return `${diffInDays}일 전`;
   };
 
-  const handleNewsPress = (news: NewsItem) => {
-    console.log("뉴스 클릭:", news.title);
-    // 뉴스 상세 페이지로 이동하거나 외부 링크 열기
-    if (news.url) {
-      // 외부 브라우저에서 뉴스 원문 열기 (필요시 구현)
-      console.log("뉴스 URL:", news.url);
+  // [수정된 부분] index.tsx와 동일하게 뉴스 클릭 시 외부 브라우저에서 원문 열기
+  const handleNewsPress = async (url: string) => {
+    if (!url) {
+      Alert.alert("알림", "기사 원문 주소가 없습니다.");
+      return;
+    }
+    // 해당 URL을 열 수 있는지 확인합니다.
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      // URL을 엽니다 (기본 웹 브라우저 실행).
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("오류", `다음 주소를 열 수 없습니다: ${url}`);
     }
   };
 
@@ -380,7 +389,7 @@ export default function CategoryNewsScreen() {
                     styles.newsCard,
                     pressed && styles.pressedNewsCard,
                   ]}
-                  onPress={() => handleNewsPress(news)}
+                  onPress={() => handleNewsPress(news.url || "")} // [수정된 부분] URL 전달
                   accessibilityLabel={`${news.title} 뉴스 기사`}
                   accessibilityRole="button"
                   accessibilityHint="뉴스를 자세히 보려면 두 번 탭하세요"
@@ -401,9 +410,8 @@ export default function CategoryNewsScreen() {
                   <Text style={styles.newsTitle} numberOfLines={3}>
                     {news.title}
                   </Text>
-                  <Text style={styles.newsContent} numberOfLines={2}>
-                    {news.content}
-                  </Text>
+                  {/* [수정된 부분] numberOfLines 제한 제거로 전체 내용 표시 */}
+                  <Text style={styles.newsContent}>{news.content}</Text>
                   <View style={styles.newsFooter}>
                     <Text style={styles.newsSource}>{news.source}</Text>
                     {news.url && (
@@ -587,6 +595,7 @@ const styles = StyleSheet.create({
     color: "#666666",
     lineHeight: 20,
     marginBottom: 8,
+    // [수정된 부분] numberOfLines 제한 제거
   },
   newsFooter: {
     flexDirection: "row",
