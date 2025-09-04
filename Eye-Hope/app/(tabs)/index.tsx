@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  TouchableOpacity, // TouchableOpacity를 import 합니다.
+  Linking, // Linking을 import 합니다.
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -21,6 +23,7 @@ interface NewsItem {
   category: string;
   source: string;
   publishedAt: string;
+  url: string; // url 속성을 추가합니다.
 }
 
 // 카테고리별 색상 매핑
@@ -179,7 +182,6 @@ export default function InterestNewsScreen() {
           const data = await response.json();
           console.log(`${category} 응답 데이터:`, data);
 
-          // API 응답 구조 확인 및 변환
           if (data.success && Array.isArray(data.data)) {
             console.log(
               `${category} 카테고리: success/data 필드에서 뉴스 찾음, 개수:`,
@@ -209,6 +211,7 @@ export default function InterestNewsScreen() {
         allNews.map((news, index) => `${categories[index]}: ${news.length}개`)
       );
 
+      // [수정된 부분] url을 포함하여 데이터를 가공합니다.
       const flattenedNews = allNews.flat().map((news, index) => ({
         id: news.id || news.articleId || `news-${index}`,
         title: news.title || news.headline || "제목 없음",
@@ -221,6 +224,7 @@ export default function InterestNewsScreen() {
           news.createdAt ||
           news.publishDate ||
           new Date().toISOString(),
+        url: news.url || "", // url을 추가합니다.
       }));
 
       console.log("변환된 뉴스 데이터:", flattenedNews);
@@ -230,6 +234,23 @@ export default function InterestNewsScreen() {
       Alert.alert("오류", "뉴스를 가져오는 중 문제가 발생했습니다.");
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // [추가된 부분] 뉴스 카드를 눌렀을 때 실행될 함수
+  const handleNewsPress = async (url: string) => {
+    if (!url) {
+      Alert.alert("알림", "기사 원문 주소가 없습니다.");
+      return;
+    }
+    // 해당 URL을 열 수 있는지 확인합니다.
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      // URL을 엽니다 (기본 웹 브라우저 실행).
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("오류", `다음 주소를 열 수 없습니다: ${url}`);
     }
   };
 
@@ -293,7 +314,13 @@ export default function InterestNewsScreen() {
             <Text style={styles.sectionTitle}>오늘의 주요 뉴스</Text>
 
             {newsData.map((news) => (
-              <View key={news.id} style={styles.newsCard}>
+              // [수정된 부분] View를 TouchableOpacity로 변경하고 onPress 이벤트를 추가합니다.
+              <TouchableOpacity
+                key={news.id}
+                style={styles.newsCard}
+                onPress={() => handleNewsPress(news.url)}
+                activeOpacity={0.7} // 터치 시 투명도를 조절하여 시각적 피드백을 줍니다.
+              >
                 <View style={styles.newsHeader}>
                   <Text
                     style={[
@@ -308,10 +335,9 @@ export default function InterestNewsScreen() {
                   </Text>
                 </View>
                 <Text style={styles.newsTitle}>{news.title}</Text>
-                {/* 뉴스 내용 추가 */}
                 <Text style={styles.newsContent}>{news.content}</Text>
                 <Text style={styles.newsSource}>{news.source}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         ) : (
