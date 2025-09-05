@@ -6,6 +6,7 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -27,26 +28,26 @@ export default function TimeSelectScreen() {
   );
 
   const morningTimes = [
-    "5시",
-    "6시",
-    "7시",
-    "8시",
-    "9시",
-    "10시",
-    "11시",
-    "12시",
-    "13시",
+    "05:00",
+    "06:00", 
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
   ];
   const eveningTimes = [
-    "13시",
-    "14시",
-    "15시",
-    "16시",
-    "17시",
-    "18시",
-    "19시",
-    "20시",
-    "21시",
+    "13:00",
+    "14:00",
+    "15:00", 
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
   ];
 
   const handleMorningTimeSelect = (time: string) => {
@@ -68,38 +69,48 @@ export default function TimeSelectScreen() {
   };
 
   const handleComplete = async () => {
-    if (selectedMorningTime && selectedEveningTime) {
-      // fromSettings 파라미터 확인
-      if (fromSettings === "true") {
-        // 설정 페이지에서 왔다면 설정 페이지로 돌아가면서 시간 정보 전달
-        router.push({
-          pathname: "/(tabs)/settings",
-          params: {
-            selectedTimes: JSON.stringify({
-              morning: selectedMorningTime,
-              evening: selectedEveningTime,
-            }),
-            fromSettings: "true",
-          },
-        });
-      } else {
-        // 일반 플로우(초기 설정)라면 설정 완료 플래그 저장
-        await saveSetupCompleted();
-        
-        // 관심뉴스 탭으로 이동하면서 시간 정보도 전달
-        router.push({
-          pathname: "/(tabs)",
-          params: {
-            categories: categories,
-            morningTime: selectedMorningTime,
-            eveningTime: selectedEveningTime,
-            selectedTimes: JSON.stringify({
-              morning: selectedMorningTime,
-              evening: selectedEveningTime,
-            }),
-          },
-        });
-      }
+    // fromSettings가 아닌 경우 시간 선택을 필수로 만들기
+    if (fromSettings !== "true" && (!selectedMorningTime || !selectedEveningTime)) {
+      Alert.alert(
+        "시간 선택 필요", 
+        "알림을 받을 시간을 선택해주세요.\n아침과 저녁 시간을 모두 선택해야 합니다.",
+        [{ text: "확인" }]
+      );
+      return;
+    }
+
+    const selectedTimes = {
+      morning: selectedMorningTime || "09:00", // 기본값 설정
+      evening: selectedEveningTime || "18:00", // 기본값 설정
+    };
+
+    console.log("=== 시간 선택 완료 ===");
+    console.log("선택된 시간:", selectedTimes);
+    console.log("fromSettings:", fromSettings);
+
+    // fromSettings 파라미터 확인
+    if (fromSettings === "true") {
+      // 설정 페이지에서 왔다면 설정 페이지로 돌아가면서 시간 정보 전달
+      router.push({
+        pathname: "/(tabs)/settings",
+        params: {
+          selectedTimes: JSON.stringify(selectedTimes),
+          fromSettings: "true",
+        },
+      });
+    } else {
+      // 일반 플로우(초기 설정)라면 사용자 등록 페이지로 이동
+      console.log("사용자 등록으로 이동 - 전달할 데이터:");
+      console.log("categories:", categories);
+      console.log("selectedTimes:", JSON.stringify(selectedTimes));
+      
+      router.push({
+        pathname: "/userRegistration",
+        params: {
+          categories: categories,
+          selectedTimes: JSON.stringify(selectedTimes),
+        },
+      });
     }
   };
 
@@ -137,6 +148,9 @@ export default function TimeSelectScreen() {
         </Text>
         <Text style={styles.instructionTextBlue}>
           어느 시간 대를 원하는지 골라주세요.
+        </Text>
+        <Text style={styles.instructionSubText}>
+          (알림 시간은 선택사항입니다)
         </Text>
       </View>
 
@@ -187,37 +201,27 @@ export default function TimeSelectScreen() {
       </ScrollView>
 
       {/* 하단 완료 버튼 */}
-      <View style={styles.completeButtonContainer}>
+      <View style={styles.buttonContainer}>
+        {/* 시간 선택이 없어도 진행할 수 있도록 수정 */}
         <Pressable
           style={({ pressed }) => [
             styles.completeButton,
-            (!selectedMorningTime || !selectedEveningTime) &&
-              styles.disabledCompleteButton,
             pressed && styles.pressedButton,
           ]}
           onPress={handleComplete}
-          disabled={!selectedMorningTime || !selectedEveningTime}
-          accessibilityLabel="완료 버튼"
+          accessibilityLabel="다음 단계로 이동"
           accessibilityRole="button"
-          accessibilityState={{
-            disabled: !selectedMorningTime || !selectedEveningTime,
-          }}
-          accessibilityHint={
-            selectedMorningTime && selectedEveningTime
-              ? "선택한 시간으로 진행하려면 두 번 탭하세요"
-              : "아침과 저녁 시간을 모두 선택해주세요"
-          }
+          accessibilityHint="사용자 정보 입력 화면으로 이동합니다"
         >
-          <Text
-            style={[
-              styles.completeButtonText,
-              (!selectedMorningTime || !selectedEveningTime) &&
-                styles.disabledCompleteButtonText,
-            ]}
-          >
-            완료
+          <Text style={styles.completeButtonText}>
+            {fromSettings === "true" ? "완료" : "다음"}
           </Text>
         </Pressable>
+
+        {/* 시간 선택 안내 텍스트 */}
+        <Text style={styles.skipText}>
+          알림 시간은 나중에 설정에서 변경할 수 있습니다
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -249,6 +253,13 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     lineHeight: 24,
     fontWeight: "500",
+    marginBottom: 8,
+  },
+  instructionSubText: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#8E8E93",
+    lineHeight: 20,
   },
   timeSelectionContainer: {
     flex: 1,
@@ -308,7 +319,7 @@ const styles = StyleSheet.create({
   selectedTimeButtonText: {
     color: "#FFFFFF",
   },
-  completeButtonContainer: {
+  buttonContainer: {
     paddingHorizontal: 20,
     paddingBottom: 30,
     alignItems: "center",
@@ -328,11 +339,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-  },
-  disabledCompleteButton: {
-    backgroundColor: "#CCCCCC",
-    elevation: 0,
-    shadowOpacity: 0,
+    marginBottom: 12,
   },
   pressedButton: {
     opacity: 0.8,
@@ -343,7 +350,24 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
-  disabledCompleteButtonText: {
-    color: "#999999",
+  skipText: {
+    fontSize: 12,
+    color: "#8E8E93",
+    textAlign: "center",
+    lineHeight: 16,
+  },
+  selectedTimeDebug: {
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: "#FFF3CD",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#FFE69C",
+  },
+  debugText: {
+    fontSize: 12,
+    color: "#856404",
+    textAlign: "center",
+    fontWeight: "500",
   },
 });

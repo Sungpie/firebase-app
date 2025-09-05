@@ -52,6 +52,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="userRegistration"
+          options={{
+            headerShown: false,
+            title: "사용자 등록",
+          }}
+        />
+        <Stack.Screen
           name="newsList"
           options={{
             headerShown: false,
