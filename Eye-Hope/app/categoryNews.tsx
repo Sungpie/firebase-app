@@ -365,11 +365,15 @@ export default function CategoryNewsScreen() {
         }
         onScroll={({ nativeEvent }) => {
           const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const paddingToBottom = 20;
-          if (
-            layoutMeasurement.height + contentOffset.y >=
-            contentSize.height - paddingToBottom
-          ) {
+          
+          // 전체 스크롤 가능한 높이
+          const totalScrollableHeight = contentSize.height - layoutMeasurement.height;
+          
+          // 70% 지점 계산
+          const triggerPoint = totalScrollableHeight * 0.7;
+          
+          // 현재 스크롤 위치가 70%를 넘었는지 확인
+          if (contentOffset.y >= triggerPoint && totalScrollableHeight > 0) {
             handleLoadMore();
           }
         }}
