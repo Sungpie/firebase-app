@@ -29,11 +29,55 @@ const getCategoryColor = (category: string): string => {
   return colorMap[category] || "#007AFF"; // 기본색상
 };
 
+// 카테고리 매핑 함수들
+const categoryToId = (category: string): number => {
+  const mapping: { [key: string]: number } = {
+    "경제": 1,
+    "증권": 2,
+    "스포츠": 3,
+    "연예": 4,
+    "정치": 5,
+    "IT": 6,
+    "사회": 7,
+    "오피니언": 8,
+  };
+  return mapping[category] || 0;
+};
+
+const idToCategory = (id: number): string => {
+  const mapping: { [key: number]: string } = {
+    1: "경제",
+    2: "증권", 
+    3: "스포츠",
+    4: "연예",
+    5: "정치",
+    6: "IT",
+    7: "사회",
+    8: "오피니언",
+  };
+  return mapping[id] || "";
+};
+
 interface UserInfo {
   deviceId: string;
   name?: string;
   email?: string;
   nickname: string;
+}
+
+interface NewsItem {
+  id: number;
+  category: string;
+  pressName: string;
+}
+
+interface UserNewsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    deviceId: string;
+    news: NewsItem[];
+  };
 }
 
 export default function SettingsScreen() {
@@ -69,27 +113,89 @@ export default function SettingsScreen() {
       console.log("현재 params:", params);
 
       // 파라미터가 있으면 우선 처리 후 즉시 반환
-      if (params.selectedCategories || params.selectedTimes) {
+      if (params.selectedCategories || params.selectedTimes || params.updatedUserInfo) {
         console.log("파라미터가 있어서 파라미터 우선 처리");
         handleParamsUpdate();
-        return; // 파라미터 처리 후 즉시 반환
+        return;
       }
 
       // 파라미터가 없을 때만 저장된 데이터 로드
       console.log("파라미터가 없어서 저장된 데이터 로드");
       loadSavedData();
-    }, [params.selectedCategories, params.selectedTimes])
+    }, [params.selectedCategories, params.selectedTimes, params.updatedUserInfo, params.fromNewsUpdate])
   );
+
+  // 백엔드에서 사용자 관심 뉴스 가져오기 (새로운 API 사용)
+  const fetchUserNews = async (): Promise<string[] | null> => {
+    try {
+      const deviceId = await AsyncStorage.getItem("deviceId");
+      if (!deviceId) {
+        console.log("DeviceId가 없습니다");
+        return null;
+      }
+
+      console.log("📰 === 백엔드에서 사용자 관심 뉴스 가져오기 시작 ===");
+      console.log("📤 DeviceId:", deviceId);
+      
+      // 새로운 API 엔드포인트 사용
+      const response = await fetch(`http://13.124.111.205:8080/apis/users/news/${encodeURIComponent(deviceId)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("📥 응답 상태:", response.status);
+
+      if (response.ok) {
+        const result: UserNewsResponse = await response.json();
+        console.log("📥 응답 데이터:", JSON.stringify(result, null, 2));
+        
+        if (result.success && result.data && Array.isArray(result.data.news)) {
+          // 새로운 응답 형식에서 카테고리명 추출
+          const categories = result.data.news.map((newsItem: NewsItem) => newsItem.category);
+          console.log("📰 추출된 카테고리:", categories);
+          
+          // 유효한 카테고리만 필터링
+          const validCategories = categories.filter(cat => cat && cat.trim() !== "");
+          console.log("📰 유효한 카테고리:", validCategories);
+          
+          return validCategories;
+        } else {
+          console.log("📰 응답 데이터 형식이 올바르지 않음:", result);
+          return null;
+        }
+      } else {
+        console.log("📰 HTTP 오류 응답:", response.status);
+        return null;
+      }
+      
+    } catch (error) {
+      console.error("🚨 사용자 관심 뉴스 가져오기 오류:", error);
+      return null;
+    }
+  };
 
   // 저장된 데이터 불러오기
   const loadSavedData = async () => {
     try {
-      // 카테고리 로드
-      const savedCategories = await AsyncStorage.getItem("userCategories");
-      if (savedCategories) {
-        const parsedCategories = JSON.parse(savedCategories);
-        setCurrentCategories(parsedCategories);
-        console.log("저장된 카테고리 로드됨:", parsedCategories);
+      // 백엔드에서 관심 뉴스 가져오기 시도
+      const backendCategories = await fetchUserNews();
+      
+      if (backendCategories && backendCategories.length > 0) {
+        console.log("✅ 백엔드에서 관심 뉴스 로드됨:", backendCategories);
+        setCurrentCategories(backendCategories);
+        // 백엔드 데이터를 로컬에도 동기화
+        await AsyncStorage.setItem("userCategories", JSON.stringify(backendCategories));
+      } else {
+        // 백엔드에서 가져오기 실패 시 로컬 데이터 사용
+        console.log("⚠️ 백엔드에서 가져오기 실패 - 로컬 데이터 사용");
+        const savedCategories = await AsyncStorage.getItem("userCategories");
+        if (savedCategories) {
+          const parsedCategories = JSON.parse(savedCategories);
+          setCurrentCategories(parsedCategories);
+          console.log("📱 로컬에서 관심 뉴스 로드됨:", parsedCategories);
+        }
       }
 
       // 시간 정보 로드
@@ -97,7 +203,7 @@ export default function SettingsScreen() {
       if (savedTimes) {
         const parsedTimes = JSON.parse(savedTimes);
         setCurrentTimes(parsedTimes);
-        console.log("저장된 시간 정보 로드됨:", parsedTimes);
+        console.log("⏰ 저장된 시간 정보 로드됨:", parsedTimes);
       }
 
       // 사용자 정보 로드
@@ -105,39 +211,10 @@ export default function SettingsScreen() {
       if (savedUserInfo) {
         const parsedUserInfo = JSON.parse(savedUserInfo);
         setUserInfo(parsedUserInfo);
-        console.log("저장된 사용자 정보 로드됨:", parsedUserInfo);
+        console.log("👤 저장된 사용자 정보 로드됨:", parsedUserInfo);
       }
     } catch (error) {
-      console.error("저장된 데이터 로드 오류:", error);
-    }
-  };
-
-  // 백엔드에서 최신 사용자 정보 가져오기
-  const refreshUserInfo = async () => {
-    try {
-      const deviceId = await AsyncStorage.getItem("deviceId");
-      if (!deviceId) {
-        console.log("DeviceId가 없습니다");
-        return;
-      }
-
-      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setUserInfo(result.data);
-          await AsyncStorage.setItem("userInfo", JSON.stringify(result.data));
-          console.log("사용자 정보가 업데이트되었습니다:", result.data);
-        }
-      }
-    } catch (error) {
-      console.error("사용자 정보 새로고침 오류:", error);
+      console.error("❌ 저장된 데이터 로드 오류:", error);
     }
   };
 
@@ -203,6 +280,25 @@ export default function SettingsScreen() {
       }
     }
 
+    // updatedUserInfo 파라미터가 있으면 업데이트
+    if (params.updatedUserInfo) {
+      try {
+        const updatedInfo = JSON.parse(params.updatedUserInfo as string);
+        console.log("사용자 정보 상태 업데이트:", updatedInfo);
+        setUserInfo(updatedInfo);
+        // AsyncStorage에 사용자 정보 저장
+        AsyncStorage.setItem("userInfo", JSON.stringify(updatedInfo));
+      } catch (error) {
+        console.error("사용자 정보 파라미터 파싱 오류:", error);
+      }
+    }
+
+    // fromNewsUpdate 파라미터가 있으면 백엔드에서 최신 뉴스 정보 다시 로드
+    if (params.fromNewsUpdate === "true") {
+      console.log("뉴스 업데이트 완료 - 백엔드에서 최신 정보 로드");
+      loadSavedData();
+    }
+
     console.log("파라미터 업데이트 처리 완료");
   };
 
@@ -220,15 +316,15 @@ export default function SettingsScreen() {
     });
   };
 
-  const handleUserInfoRefresh = () => {
-    Alert.alert(
-      "사용자 정보 새로고침",
-      "백엔드에서 최신 정보를 가져오시겠습니까?",
-      [
-        { text: "취소", style: "cancel" },
-        { text: "새로고침", onPress: refreshUserInfo },
-      ]
-    );
+  // 사용자 정보 변경 페이지로 이동
+  const handleUserInfoChange = () => {
+    router.push({
+      pathname: "/userEdit",
+      params: { 
+        currentUserInfo: JSON.stringify(userInfo || {}),
+        fromSettings: "true"
+      },
+    });
   };
 
   return (
@@ -240,12 +336,16 @@ export default function SettingsScreen() {
         </View>
 
         {/* 사용자 정보 섹션 */}
-        <View style={styles.userInfoSection}>
-          <View style={styles.sectionHeader}>
+        <TouchableOpacity 
+          style={styles.userInfoSection}
+          onPress={handleUserInfoChange}
+          activeOpacity={0.7}
+          accessibilityLabel="사용자 정보 변경"
+          accessibilityRole="button"
+          accessibilityHint="사용자 정보를 변경하려면 두 번 탭하세요"
+        >
+          <View style={styles.sectionHeaderSimple}>
             <Text style={styles.sectionTitle}>사용자 정보</Text>
-            <TouchableOpacity onPress={handleUserInfoRefresh}>
-              <Ionicons name="refresh" size={20} color="#007AFF" />
-            </TouchableOpacity>
           </View>
           
           {userInfo ? (
@@ -279,7 +379,12 @@ export default function SettingsScreen() {
           ) : (
             <Text style={styles.noUserInfo}>사용자 정보를 불러올 수 없습니다</Text>
           )}
-        </View>
+          
+          {/* 변경 안내 문구 추가 */}
+          <Text style={styles.changeHintText}>
+            변경을 원하신다면 두 번 눌러주세요
+          </Text>
+        </TouchableOpacity>
 
         {/* 현재 관심뉴스 섹션 */}
         <TouchableOpacity
@@ -290,23 +395,29 @@ export default function SettingsScreen() {
           accessibilityLabel="관심 뉴스를 변경하려면 탭하세요"
           accessibilityHint="관심 뉴스 카테고리를 수정할 수 있는 페이지로 이동합니다"
         >
-          <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
-            현재 관심뉴스
-          </Text>
+          <View style={styles.sectionHeaderSimple}>
+            <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
+              현재 관심뉴스
+            </Text>
+          </View>
+          
           <View
             style={[styles.categoriesContainer, { justifyContent: "center" }]}
           >
             {currentCategories.map((category, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.categoryTag,
-                  { backgroundColor: getCategoryColor(category) },
-                ]}
-              >
-                <Text style={[styles.categoryText, { textAlign: "center" }]}>
-                  {category}
-                </Text>
+              <View key={index} style={styles.categoryItemContainer}>
+                <View
+                  style={[
+                    styles.categoryTag,
+                    { backgroundColor: getCategoryColor(category) },
+                  ]}
+                >
+                  <Text style={[styles.categoryText, { textAlign: "center" }]}>
+                    {category}
+                  </Text>
+                </View>
+                {/* 개발용 ID 표시 (필요시 제거) */}
+                <Text style={styles.categoryIdSmall}>ID: {categoryToId(category)}</Text>
               </View>
             ))}
           </View>
@@ -315,6 +426,9 @@ export default function SettingsScreen() {
           </Text>
           <Text style={[styles.instructionText, { textAlign: "center" }]}>
             변경을 원하신다면 두 번 눌러주세요.
+          </Text>
+          <Text style={[styles.backendSyncText, { textAlign: "center" }]}>
+            💾 백엔드와 동기화됨
           </Text>
         </TouchableOpacity>
 
@@ -407,11 +521,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#34C759",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  sectionHeaderSimple: {
     marginBottom: 12,
   },
   sectionTitle: {
@@ -421,6 +540,7 @@ const styles = StyleSheet.create({
   },
   userInfoContainer: {
     gap: 8,
+    marginBottom: 12,
   },
   userInfoItem: {
     flexDirection: "row",
@@ -442,6 +562,16 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     textAlign: "center",
     fontStyle: "italic",
+    marginBottom: 12,
+  },
+  changeHintText: {
+    fontSize: 14,
+    color: "#007AFF",
+    textAlign: "center",
+    fontWeight: "500",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5EA",
   },
   interestNewsSection: {
     marginHorizontal: 20,
@@ -456,18 +586,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginBottom: 16,
+    marginTop: 16,
+  },
+  categoryItemContainer: {
+    alignItems: "center",
+    marginRight: 8,
+    marginBottom: 8,
   },
   categoryTag: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
   },
   categoryText: {
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "500",
+  },
+  categoryIdSmall: {
+    fontSize: 10,
+    color: "#8E8E93",
+    marginTop: 2,
   },
   questionText: {
     fontSize: 16,
@@ -478,6 +617,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#007AFF",
     fontWeight: "500",
+  },
+  backendSyncText: {
+    fontSize: 12,
+    color: "#34C759",
+    fontWeight: "500",
+    marginTop: 8,
   },
   timeChangeSection: {
     marginHorizontal: 20,
