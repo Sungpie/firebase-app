@@ -38,6 +38,14 @@ interface UserNewsData {
   newsIds: number[];
 }
 
+interface UserRegistrationData {
+  deviceId: string;
+  name?: string;
+  email?: string;
+  nickname: string;
+  password?: string;
+}
+
 export default function ConfirmationScreen() {
   const { categories, fromSettings } = useLocalSearchParams<{
     categories: string;
@@ -48,6 +56,67 @@ export default function ConfirmationScreen() {
 
   // JSON 문자열을 파싱하여 카테고리 배열로 변환
   const selectedCategories = categories ? JSON.parse(categories) : [];
+
+  // 사용자 존재 여부 확인
+  const checkUserExists = async (deviceId: string): Promise<boolean> => {
+    try {
+      console.log("👤 사용자 존재 여부 확인 중:", deviceId);
+      
+      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("👤 사용자 존재 확인 응답 상태:", response.status);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log("👤 사용자 존재 확인 응답:", result);
+        return result.success && result.data;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("👤 사용자 존재 확인 오류:", error);
+      return false;
+    }
+  };
+
+  // 사용자 등록 API 호출
+  const registerUser = async (userData: UserRegistrationData) => {
+    try {
+      console.log("👤 === 사용자 등록 API 호출 시작 ===");
+      console.log("📤 전송 데이터:", JSON.stringify(userData, null, 2));
+      
+      const response = await fetch("http://13.124.111.205:8080/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deviceId: userData.deviceId,
+          name: userData.name || null,
+          email: userData.email || null,
+          nickname: userData.nickname,
+          password: null,
+        }),
+      });
+
+      const result = await response.json();
+      console.log("👤 사용자 등록 응답:", result);
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "사용자 등록에 실패했습니다.");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("👤 사용자 등록 오류:", error);
+      throw error;
+    }
+  };
 
   // 백엔드에 사용자 관심 뉴스 저장
   const saveUserNews = async (newsData: UserNewsData) => {
@@ -98,6 +167,82 @@ export default function ConfirmationScreen() {
         throw new Error("사용자 정보를 찾을 수 없습니다.");
       }
 
+      console.log("🔍 DeviceId:", deviceId);
+
+      // 사용자 존재 여부 확인
+      const userExists = await checkUserExists(deviceId);
+      console.log("👤 사용자 존재 여부:", userExists);
+
+      // 사용자가 존재하지 않으면 먼저 등록
+      if (!userExists) {
+        console.log("⚠️ 사용자가 존재하지 않음 - 먼저 사용자 등록 진행");
+        
+        // 로컬 스토리지에서 사용자 정보 확인
+        let userInfo = null;
+        const savedUserInfo = await AsyncStorage.getItem("userInfo");
+        if (savedUserInfo) {
+          try {
+            userInfo = JSON.parse(savedUserInfo);
+          } catch (parseError) {
+            console.error("사용자 정보 파싱 오류:", parseError);
+          }
+        }
+
+        // 사용자 정보가 없으면 기본 닉네임으로 등록
+        const nickname = userInfo?.nickname || "사용자";
+        
+        const userRegistrationData: UserRegistrationData = {
+          deviceId: deviceId,
+          name: undefined,
+          email: undefined,
+          nickname: nickname,
+          password: undefined,
+        };
+
+        try {
+          await registerUser(userRegistrationData);
+          console.log("✅ 사용자 등록 성공");
+
+          // 사용자 정보를 AsyncStorage에 저장
+          await AsyncStorage.setItem("userInfo", JSON.stringify({
+            deviceId: deviceId,
+            name: "",
+            email: "",
+            nickname: nickname,
+          }));
+
+        } catch (registerError) {
+          console.error("❌ 사용자 등록 실패:", registerError);
+          
+          Alert.alert(
+            "사용자 등록 실패",
+            "사용자 등록에 실패했습니다. 처음부터 다시 시작하시겠습니까?",
+            [
+              {
+                text: "취소",
+                style: "cancel",
+              },
+              {
+                text: "다시 시작",
+                onPress: () => {
+                  // 로컬 데이터 모두 삭제 후 처음부터
+                  AsyncStorage.multiRemove([
+                    "setupCompleted", 
+                    "userCategories", 
+                    "userTimes", 
+                    "userInfo",
+                    "deviceId"
+                  ]).then(() => {
+                    router.replace("/selectCategory");
+                  });
+                },
+              },
+            ]
+          );
+          return;
+        }
+      }
+
       // 카테고리를 ID로 변환
       const newsIds = selectedCategories.map((category: string) => categoryToId(category));
       console.log("변환된 뉴스 ID:", newsIds);
@@ -135,7 +280,7 @@ export default function ConfirmationScreen() {
       }
 
     } catch (error) {
-      console.error("관심 뉴스 저장 오류:", error);
+      console.error("❌ 관심 뉴스 저장 오류:", error);
       
       const errorMessage = error instanceof Error ? error.message : "관심 뉴스 저장 중 오류가 발생했습니다.";
       
@@ -162,6 +307,21 @@ export default function ConfirmationScreen() {
                   params: { categories: JSON.stringify(selectedCategories) },
                 });
               }
+            },
+          },
+          {
+            text: "처음부터 다시",
+            onPress: () => {
+              // 로컬 데이터 모두 삭제 후 처음부터
+              AsyncStorage.multiRemove([
+                "setupCompleted", 
+                "userCategories", 
+                "userTimes", 
+                "userInfo",
+                "deviceId"
+              ]).then(() => {
+                router.replace("/selectCategory");
+              });
             },
           },
           {

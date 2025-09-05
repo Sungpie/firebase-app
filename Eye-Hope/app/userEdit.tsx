@@ -98,15 +98,11 @@ export default function UserEditScreen() {
     }
   };
 
-  // 변경사항 확인
+  // 변경사항 확인 (닉네임만 체크)
   const hasChanges = () => {
     if (!originalData) return false;
     
-    return (
-      formData.name !== (originalData.name || "") ||
-      formData.email !== (originalData.email || "") ||
-      formData.nickname !== originalData.nickname
-    );
+    return formData.nickname !== originalData.nickname;
   };
 
   // 저장 버튼 처리
@@ -132,8 +128,8 @@ export default function UserEditScreen() {
 
       const updateData: UserUpdateData = {
         deviceId: originalData.deviceId,
-        name: formData.name.trim() || undefined,
-        email: formData.email.trim() || undefined,
+        name: originalData.name, // 기존 값 유지
+        email: originalData.email, // 기존 값 유지
         nickname: formData.nickname.trim(),
       };
 
@@ -143,8 +139,6 @@ export default function UserEditScreen() {
       // 업데이트된 사용자 정보
       const updatedUserInfo = {
         ...originalData,
-        name: formData.name.trim(),
-        email: formData.email.trim(),
         nickname: formData.nickname.trim(),
       };
 
@@ -257,7 +251,7 @@ export default function UserEditScreen() {
         {/* 안내 문구 */}
         <View style={styles.instructionContainer}>
           <Text style={styles.instructionText}>
-            사용자 정보를 변경할 수 있습니다.
+            닉네임을 변경할 수 있습니다.
           </Text>
           <Text style={styles.instructionSubText}>
             * 표시된 항목은 필수 입력사항입니다.
@@ -266,8 +260,8 @@ export default function UserEditScreen() {
 
         {/* 입력 폼 */}
         <View style={styles.formContainer}>
-          {/* 이름 (선택사항) */}
-          <View style={styles.inputGroup}>
+          {/* 이름 (숨김 처리) */}
+          <View style={[styles.inputGroup, styles.hiddenInput]}>
             <Text style={styles.inputLabel}>이름 (선택사항)</Text>
             <TextInput
               style={styles.textInput}
@@ -280,8 +274,8 @@ export default function UserEditScreen() {
             />
           </View>
 
-          {/* 이메일 (선택사항) */}
-          <View style={styles.inputGroup}>
+          {/* 이메일 (숨김 처리) */}
+          <View style={[styles.inputGroup, styles.hiddenInput]}>
             <Text style={styles.inputLabel}>이메일 (선택사항)</Text>
             <TextInput
               style={styles.textInput}
@@ -436,6 +430,10 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 20,
+  },
+  // 숨김 처리 스타일 추가
+  hiddenInput: {
+    display: "none",
   },
   inputLabel: {
     fontSize: 16,
