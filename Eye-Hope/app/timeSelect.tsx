@@ -7,9 +7,15 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+interface NotificationScheduleData {
+  deviceId: string;
+  notificationTime: string[];
+}
 
 export default function TimeSelectScreen() {
   const { categories, fromSettings } = useLocalSearchParams<{
@@ -26,6 +32,7 @@ export default function TimeSelectScreen() {
   const [selectedEveningTime, setSelectedEveningTime] = useState<string | null>(
     null
   );
+  const [loading, setLoading] = useState(false);
 
   const morningTimes = [
     "05:00",
@@ -56,6 +63,47 @@ export default function TimeSelectScreen() {
 
   const handleEveningTimeSelect = (time: string) => {
     setSelectedEveningTime(time);
+  };
+
+  // DeviceId 가져오기
+  const getDeviceId = async (): Promise<string | null> => {
+    try {
+      return await AsyncStorage.getItem("deviceId");
+    } catch (error) {
+      console.error("DeviceId 조회 오류:", error);
+      return null;
+    }
+  };
+
+  // 백엔드에 알림 시간 업데이트 요청
+  const updateNotificationSchedule = async (scheduleData: NotificationScheduleData) => {
+    try {
+      console.log("🔄 === 알림 시간 업데이트 API 호출 시작 ===");
+      console.log("📤 전송 데이터:", JSON.stringify(scheduleData, null, 2));
+      
+      const response = await fetch("http://13.124.111.205:8080/api/users/schedules", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(scheduleData),
+      });
+
+      console.log("📥 응답 상태:", response.status);
+      
+      const result = await response.json();
+      console.log("📥 응답 데이터:", JSON.stringify(result, null, 2));
+      console.log("🔄 === 알림 시간 업데이트 API 호출 종료 ===");
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "알림 시간 업데이트에 실패했습니다.");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("🚨 알림 시간 업데이트 오류:", error);
+      throw error;
+    }
   };
 
   // 설정 완료 플래그 저장 함수
@@ -90,14 +138,87 @@ export default function TimeSelectScreen() {
 
     // fromSettings 파라미터 확인
     if (fromSettings === "true") {
-      // 설정 페이지에서 왔다면 설정 페이지로 돌아가면서 시간 정보 전달
-      router.push({
-        pathname: "/(tabs)/settings",
-        params: {
-          selectedTimes: JSON.stringify(selectedTimes),
-          fromSettings: "true",
-        },
-      });
+      // 설정 페이지에서 온 경우 - 백엔드에 시간 업데이트 요청
+      setLoading(true);
+      
+      try {
+        // DeviceId 가져오기
+        const deviceId = await getDeviceId();
+        
+        if (!deviceId) {
+          throw new Error("사용자 정보를 찾을 수 없습니다.");
+        }
+
+        // 선택된 시간이 있을 때만 백엔드 업데이트
+        if (selectedMorningTime && selectedEveningTime) {
+          const notificationScheduleData: NotificationScheduleData = {
+            deviceId: deviceId,
+            notificationTime: [selectedMorningTime, selectedEveningTime],
+          };
+
+          await updateNotificationSchedule(notificationScheduleData);
+          
+          Alert.alert(
+            "완료",
+            "알림 시간이 성공적으로 업데이트되었습니다.",
+            [
+              {
+                text: "확인",
+                onPress: () => {
+                  // 설정 페이지로 돌아가면서 시간 정보 전달
+                  router.push({
+                    pathname: "/(tabs)/settings",
+                    params: {
+                      selectedTimes: JSON.stringify(selectedTimes),
+                      fromSettings: "true",
+                    },
+                  });
+                },
+              },
+            ]
+          );
+        } else {
+          // 시간이 선택되지 않은 경우 그냥 설정 페이지로 돌아가기
+          router.push({
+            pathname: "/(tabs)/settings",
+            params: {
+              selectedTimes: JSON.stringify(selectedTimes),
+              fromSettings: "true",
+            },
+          });
+        }
+
+      } catch (error) {
+        console.error("시간 업데이트 오류:", error);
+        
+        const errorMessage = error instanceof Error ? error.message : "시간 업데이트 중 오류가 발생했습니다.";
+        
+        Alert.alert(
+          "오류",
+          errorMessage,
+          [
+            {
+              text: "그래도 진행",
+              onPress: () => {
+                // 오류가 발생해도 설정 페이지로 돌아가기
+                router.push({
+                  pathname: "/(tabs)/settings",
+                  params: {
+                    selectedTimes: JSON.stringify(selectedTimes),
+                    fromSettings: "true",
+                  },
+                });
+              },
+            },
+            {
+              text: "재시도",
+              style: "cancel",
+            },
+          ]
+        );
+      } finally {
+        setLoading(false);
+      }
     } else {
       // 일반 플로우(초기 설정)라면 사용자 등록 페이지로 이동
       console.log("사용자 등록으로 이동 - 전달할 데이터:");
@@ -144,13 +265,21 @@ export default function TimeSelectScreen() {
       {/* 상단 안내 문구 */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
-          매일 아침 / 저녁으로 핫한 뉴스를 알림으로 보내드려요.
+          {fromSettings === "true" 
+            ? "새로운 알림 시간을 선택해주세요."
+            : "매일 아침 / 저녁으로 핫한 뉴스를 알림으로 보내드려요."
+          }
         </Text>
-        <Text style={styles.instructionTextBlue}>
-          어느 시간 대를 원하는지 골라주세요.
-        </Text>
+        {fromSettings !== "true" && (
+          <Text style={styles.instructionTextBlue}>
+            어느 시간 대를 원하는지 골라주세요.
+          </Text>
+        )}
         <Text style={styles.instructionSubText}>
-          (알림 시간은 선택사항입니다)
+          {fromSettings === "true" 
+            ? "(시간을 선택하지 않으면 기존 설정이 유지됩니다)"
+            : "(알림 시간은 선택사항입니다)"
+          }
         </Text>
       </View>
 
@@ -202,26 +331,50 @@ export default function TimeSelectScreen() {
 
       {/* 하단 완료 버튼 */}
       <View style={styles.buttonContainer}>
-        {/* 시간 선택이 없어도 진행할 수 있도록 수정 */}
         <Pressable
           style={({ pressed }) => [
             styles.completeButton,
             pressed && styles.pressedButton,
+            loading && styles.disabledButton,
           ]}
           onPress={handleComplete}
+          disabled={loading}
           accessibilityLabel="다음 단계로 이동"
           accessibilityRole="button"
-          accessibilityHint="사용자 정보 입력 화면으로 이동합니다"
+          accessibilityHint={
+            fromSettings === "true" 
+              ? "설정을 저장하고 설정 페이지로 돌아갑니다"
+              : "사용자 정보 입력 화면으로 이동합니다"
+          }
         >
-          <Text style={styles.completeButtonText}>
-            {fromSettings === "true" ? "완료" : "다음"}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={[
+              styles.completeButtonText,
+              loading && styles.disabledButtonText,
+            ]}>
+              {fromSettings === "true" ? "저장" : "다음"}
+            </Text>
+          )}
         </Pressable>
 
         {/* 시간 선택 안내 텍스트 */}
         <Text style={styles.skipText}>
-          알림 시간은 나중에 설정에서 변경할 수 있습니다
+          {fromSettings === "true" 
+            ? "변경사항이 즉시 적용됩니다"
+            : "알림 시간은 나중에 설정에서 변경할 수 있습니다"
+          }
         </Text>
+
+        {/* 선택된 시간 표시 (디버그용) */}
+        {(selectedMorningTime || selectedEveningTime) && (
+          <View style={styles.selectedTimeDebug}>
+            <Text style={styles.debugText}>
+              선택된 시간: {selectedMorningTime || "미선택"} / {selectedEveningTime || "미선택"}
+            </Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -341,6 +494,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     marginBottom: 12,
   },
+  disabledButton: {
+    backgroundColor: "#C7C7CC",
+    elevation: 0,
+    shadowOpacity: 0,
+  },
   pressedButton: {
     opacity: 0.8,
     transform: [{ scale: 0.98 }],
@@ -349,6 +507,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#FFFFFF",
+  },
+  disabledButtonText: {
+    color: "#8E8E93",
   },
   skipText: {
     fontSize: 12,
