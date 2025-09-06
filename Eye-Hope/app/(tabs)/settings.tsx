@@ -483,6 +483,50 @@ export default function SettingsScreen() {
     });
   };
 
+  // 접근성을 위한 사용자 정보 텍스트 생성
+  const getUserInfoAccessibilityLabel = () => {
+    if (!userInfo) {
+      return "사용자 정보를 불러올 수 없습니다. 사용자 정보 변경을 원하신다면 두 번 눌러주세요";
+    }
+    
+    let label = "사용자 정보. ";
+    label += `닉네임: ${userInfo.nickname || "정보 없음"}. `;
+    if (userInfo.name) {
+      label += `이름: ${userInfo.name}. `;
+    }
+    if (userInfo.email) {
+      label += `이메일: ${userInfo.email}. `;
+    }
+    if (userInfo.deviceId) {
+      label += `Device ID: ${userInfo.deviceId.substring(0, 8)}.... `;
+    }
+    label += "사용자 정보 변경을 원하신다면 두 번 눌러주세요";
+    
+    return label;
+  };
+
+  // 접근성을 위한 관심뉴스 텍스트 생성
+  const getCategoriesAccessibilityLabel = () => {
+    let label = "현재 관심뉴스. ";
+    if (currentCategories.length > 0) {
+      label += `선택된 카테고리: ${currentCategories.join(", ")}. `;
+    } else {
+      label += "선택된 카테고리가 없습니다. ";
+    }
+    label += "관심뉴스를 수정 변경하시겠어요? 변경을 원하신다면 두 번 눌러주세요.";
+    
+    return label;
+  };
+
+  // 접근성을 위한 시간 설정 텍스트 생성
+  const getTimeAccessibilityLabel = () => {
+    let label = "알림 시간대 변경. ";
+    label += `현재 알림 시간대는 ${currentTimes.morning || "미설정"}와 ${currentTimes.evening || "미설정"}에요. `;
+    label += "시간대 변경을 원하신다면 두 번 눌러주세요.";
+    
+    return label;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -498,114 +542,121 @@ export default function SettingsScreen() {
           </View>
         )}
 
-        {/* 사용자 정보 섹션 */}
+        {/* 사용자 정보 섹션 - 접근성 개선 */}
         <TouchableOpacity 
           style={styles.userInfoSection}
           onPress={handleUserInfoChange}
           activeOpacity={0.7}
-          accessibilityLabel="사용자 정보 변경"
+          accessible={true}
           accessibilityRole="button"
-          accessibilityHint="사용자 정보를 변경하려면 두 번 탭하세요"
+          accessibilityLabel={getUserInfoAccessibilityLabel()}
+          accessibilityHint="사용자 정보를 변경할 수 있는 페이지로 이동합니다"
         >
-          <View style={styles.sectionHeaderSimple}>
-            <Text style={styles.sectionTitle}>사용자 정보</Text>
+          <View style={styles.sectionHeaderSimple} accessible={false}>
+            <Text style={styles.sectionTitle} accessible={false}>사용자 정보</Text>
           </View>
           
-          {userInfo ? (
-            <View style={styles.userInfoContainer}>
-              <View style={styles.userInfoItem}>
-                <Text style={styles.userInfoLabel}>닉네임:</Text>
-                <Text style={styles.userInfoValue}>
-                  {userInfo.nickname || "정보 없음"}
-                </Text>
-              </View>
-              
-              {userInfo.name && (
-                <View style={styles.userInfoItem}>
-                  <Text style={styles.userInfoLabel}>이름:</Text>
-                  <Text style={styles.userInfoValue}>{userInfo.name}</Text>
+          <View accessible={false}>
+            {userInfo ? (
+              <View style={styles.userInfoContainer} accessible={false}>
+                <View style={styles.userInfoItem} accessible={false}>
+                  <Text style={styles.userInfoLabel} accessible={false}>닉네임:</Text>
+                  <Text style={styles.userInfoValue} accessible={false}>
+                    {userInfo.nickname || "정보 없음"}
+                  </Text>
                 </View>
-              )}
-              
-              {userInfo.email && (
-                <View style={styles.userInfoItem}>
-                  <Text style={styles.userInfoLabel}>이메일:</Text>
-                  <Text style={styles.userInfoValue}>{userInfo.email}</Text>
+                
+                {userInfo.name && (
+                  <View style={styles.userInfoItem} accessible={false}>
+                    <Text style={styles.userInfoLabel} accessible={false}>이름:</Text>
+                    <Text style={styles.userInfoValue} accessible={false}>{userInfo.name}</Text>
+                  </View>
+                )}
+                
+                {userInfo.email && (
+                  <View style={styles.userInfoItem} accessible={false}>
+                    <Text style={styles.userInfoLabel} accessible={false}>이메일:</Text>
+                    <Text style={styles.userInfoValue} accessible={false}>{userInfo.email}</Text>
+                  </View>
+                )}
+                
+                <View style={styles.userInfoItem} accessible={false}>
+                  <Text style={styles.userInfoLabel} accessible={false}>Device ID:</Text>
+                  <Text style={styles.userInfoValue} accessible={false}>
+                    {userInfo.deviceId ? userInfo.deviceId.substring(0, 8) + "..." : "정보 없음"}
+                  </Text>
                 </View>
-              )}
-              
-              <View style={styles.userInfoItem}>
-                <Text style={styles.userInfoLabel}>Device ID:</Text>
-                <Text style={styles.userInfoValue}>
-                  {userInfo.deviceId ? userInfo.deviceId.substring(0, 8) + "..." : "정보 없음"}
-                </Text>
               </View>
-            </View>
-          ) : (
-            <Text style={styles.noUserInfo}>사용자 정보를 불러올 수 없습니다</Text>
-          )}
-          
-          {/* 변경 안내 문구 추가 */}
-          <Text style={styles.changeHintText}>
-            사용자 정보 변경을 원하신다면 두 번 눌러주세요
-          </Text>
+            ) : (
+              <Text style={styles.noUserInfo} accessible={false}>사용자 정보를 불러올 수 없습니다</Text>
+            )}
+            
+            {/* 변경 안내 문구 */}
+            <Text style={styles.changeHintText} accessible={false}>
+              사용자 정보 변경을 원하신다면 두 번 눌러주세요
+            </Text>
+          </View>
         </TouchableOpacity>
 
-        {/* 현재 관심뉴스 섹션 */}
+        {/* 현재 관심뉴스 섹션 - 접근성 개선 */}
         <TouchableOpacity
           style={[styles.interestNewsSection, { alignItems: "center" }]}
           onPress={handleCategoryChange}
           activeOpacity={0.7}
+          accessible={true}
           accessibilityRole="button"
-          accessibilityLabel="관심 뉴스를 변경하려면 탭하세요"
+          accessibilityLabel={getCategoriesAccessibilityLabel()}
           accessibilityHint="관심 뉴스 카테고리를 수정할 수 있는 페이지로 이동합니다"
         >
-          <View style={styles.sectionHeaderSimple}>
-            <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
+          <View style={styles.sectionHeaderSimple} accessible={false}>
+            <Text style={[styles.sectionTitle, { textAlign: "center" }]} accessible={false}>
               현재 관심뉴스
             </Text>
           </View>
           
           <View
             style={[styles.categoriesContainer, { justifyContent: "center" }]}
+            accessible={false}
           >
             {currentCategories.map((category, index) => (
-              <View key={index} style={styles.categoryItemContainer}>
+              <View key={index} style={styles.categoryItemContainer} accessible={false}>
                 <View
                   style={[
                     styles.categoryTag,
                     { backgroundColor: getCategoryColor(category) },
                   ]}
+                  accessible={false}
                 >
-                  <Text style={[styles.categoryText, { textAlign: "center" }]}>
+                  <Text style={[styles.categoryText, { textAlign: "center" }]} accessible={false}>
                     {category || "카테고리"}
                   </Text>
                 </View>
               </View>
             ))}
           </View>
-          <Text style={[styles.questionText, { textAlign: "center" }]}>
+          <Text style={[styles.questionText, { textAlign: "center" }]} accessible={false}>
             관심뉴스를 수정 / 변경하시겠어요?
           </Text>
-          <Text style={[styles.instructionText, { textAlign: "center" }]}>
+          <Text style={[styles.instructionText, { textAlign: "center" }]} accessible={false}>
             변경을 원하신다면 두 번 눌러주세요.
           </Text>
         </TouchableOpacity>
 
-        {/* 시간대 변경 섹션 */}
+        {/* 시간대 변경 섹션 - 접근성 개선 */}
         <TouchableOpacity
           style={[styles.timeChangeSection, { alignItems: "center" }]}
           onPress={handleTimeChange}
           activeOpacity={0.7}
+          accessible={true}
           accessibilityRole="button"
-          accessibilityLabel="시간대를 변경하려면 탭하세요"
+          accessibilityLabel={getTimeAccessibilityLabel()}
           accessibilityHint="뉴스 알림을 받을 시간대를 수정할 수 있는 페이지로 이동합니다"
         >
-          <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
+          <Text style={[styles.sectionTitle, { textAlign: "center" }]} accessible={false}>
             알림 시간대 변경
           </Text>
-          <View style={[styles.timeInfoContainer, { alignItems: "center" }]}>
-            <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
+          <View style={[styles.timeInfoContainer, { alignItems: "center" }]} accessible={false}>
+            <Text style={[styles.timeInfoText, { textAlign: "center" }]} accessible={false}>
               현재 알림 시간대는
             </Text>
             <View
@@ -617,26 +668,27 @@ export default function SettingsScreen() {
                   justifyContent: "center",
                 },
               ]}
+              accessible={false}
             >
-              <View style={styles.timeButton}>
-                <Text style={[styles.timeButtonText, { textAlign: "center" }]}>
+              <View style={styles.timeButton} accessible={false}>
+                <Text style={[styles.timeButtonText, { textAlign: "center" }]} accessible={false}>
                   {currentTimes.morning || "미설정"}
                 </Text>
               </View>
-              <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
+              <Text style={[styles.timeInfoText, { textAlign: "center" }]} accessible={false}>
                 와
               </Text>
-              <View style={styles.timeButton}>
-                <Text style={[styles.timeButtonText, { textAlign: "center" }]}>
+              <View style={styles.timeButton} accessible={false}>
+                <Text style={[styles.timeButtonText, { textAlign: "center" }]} accessible={false}>
                   {currentTimes.evening || "미설정"}
                 </Text>
               </View>
-              <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
+              <Text style={[styles.timeInfoText, { textAlign: "center" }]} accessible={false}>
                 에요.
               </Text>
             </View>
           </View>
-          <Text style={[styles.instructionText, { textAlign: "center" }]}>
+          <Text style={[styles.instructionText, { textAlign: "center" }]} accessible={false}>
             시간대 변경을 원하신다면 두 번 눌러주세요.
           </Text>
         </TouchableOpacity>
