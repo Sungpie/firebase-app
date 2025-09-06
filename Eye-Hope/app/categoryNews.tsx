@@ -327,6 +327,21 @@ export default function CategoryNewsScreen() {
     }
   };
 
+  // 접근성을 위한 뉴스 카드 텍스트 생성 함수 추가
+  const getNewsAccessibilityLabel = (news: NewsItem) => {
+    let label = `${news.category} 카테고리 뉴스. `;
+    label += `제목: ${news.title}. `;
+    label += `내용: ${news.content}. `;
+    label += `출처: ${news.source}. `;
+    label += `${formatTimeAgo(news.publishedAt)}. `;
+    if (news.url) {
+      label += `원문 링크 있음. `;
+    }
+    label += `뉴스를 자세히 보려면 두 번 탭하세요.`;
+    
+    return label;
+  };
+
   if (loading && newsData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -393,31 +408,32 @@ export default function CategoryNewsScreen() {
                     styles.newsCard,
                     pressed && styles.pressedNewsCard,
                   ]}
-                  onPress={() => handleNewsPress(news.url || "")} // [수정된 부분] URL 전달
-                  accessibilityLabel={`${news.title} 뉴스 기사`}
+                  onPress={() => handleNewsPress(news.url || "")}
+                  accessible={true}
                   accessibilityRole="button"
-                  accessibilityHint="뉴스를 자세히 보려면 두 번 탭하세요"
+                  accessibilityLabel={getNewsAccessibilityLabel(news)}
+                  accessibilityHint="뉴스 원문을 보려면 두 번 탭하세요"
                 >
-                  <View style={styles.newsHeader}>
+                  <View style={styles.newsHeader} accessible={false}>
                     <Text
                       style={[
                         styles.newsCategory,
                         { backgroundColor: getCategoryColor(news.category) },
                       ]}
+                      accessible={false}
                     >
                       {news.category}
                     </Text>
-                    <Text style={styles.newsTime}>
+                    <Text style={styles.newsTime} accessible={false}>
                       {formatTimeAgo(news.publishedAt)}
                     </Text>
                   </View>
-                  <Text style={styles.newsTitle} numberOfLines={3}>
+                  <Text style={styles.newsTitle} numberOfLines={3} accessible={false}>
                     {news.title}
                   </Text>
-                  {/* [수정된 부분] numberOfLines 제한 제거로 전체 내용 표시 */}
-                  <Text style={styles.newsContent}>{news.content}</Text>
-                  <View style={styles.newsFooter}>
-                    <Text style={styles.newsSource}>{news.source}</Text>
+                  <Text style={styles.newsContent} accessible={false}>{news.content}</Text>
+                  <View style={styles.newsFooter} accessible={false}>
+                    <Text style={styles.newsSource} accessible={false}>{news.source}</Text>
                     {news.url && (
                       <Ionicons name="link-outline" size={14} color="#8E8E93" />
                     )}
@@ -599,7 +615,6 @@ const styles = StyleSheet.create({
     color: "#666666",
     lineHeight: 20,
     marginBottom: 8,
-    // [수정된 부분] numberOfLines 제한 제거
   },
   newsFooter: {
     flexDirection: "row",
