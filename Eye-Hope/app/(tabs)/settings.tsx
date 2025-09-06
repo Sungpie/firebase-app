@@ -589,9 +589,6 @@ export default function SettingsScreen() {
           <Text style={[styles.instructionText, { textAlign: "center" }]}>
             변경을 원하신다면 두 번 눌러주세요.
           </Text>
-          <Text style={[styles.backendSyncText, { textAlign: "center" }]}>
-            💾 백엔드와 동기화됨
-          </Text>
         </TouchableOpacity>
 
         {/* 시간대 변경 섹션 */}
@@ -787,12 +784,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#007AFF",
     fontWeight: "500",
-  },
-  backendSyncText: {
-    fontSize: 12,
-    color: "#34C759",
-    fontWeight: "500",
-    marginTop: 8,
   },
   timeChangeSection: {
     marginHorizontal: 20,
