@@ -350,8 +350,6 @@ export default function ConfirmationScreen() {
           <View key={index} style={styles.categoryItem}>
             <View style={styles.diamondIcon}>
               <Text style={styles.diamondText}>{category}</Text>
-              {/* 카테고리 ID 표시 (개발용 - 필요시 제거) */}
-              <Text style={styles.categoryIdText}>ID: {categoryToId(category)}</Text>
             </View>
           </View>
         ))}
@@ -441,7 +439,7 @@ const styles = StyleSheet.create({
   },
   diamondIcon: {
     width: 120,
-    height: 80, // 높이를 늘려서 ID도 표시
+    height: 60,
     backgroundColor: "#276ADC",
     justifyContent: "center",
     alignItems: "center",
@@ -461,12 +459,6 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     width: 80,
-  },
-  categoryIdText: {
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.8)",
-    textAlign: "center",
-    marginTop: 4,
   },
   summaryContainer: {
     marginHorizontal: 20,
