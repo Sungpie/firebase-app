@@ -80,6 +80,15 @@ interface UserNewsResponse {
   };
 }
 
+interface UserScheduleResponse {
+  success: boolean;
+  message: string;
+  data: {
+    deviceId: string;
+    notificationTime: string[];
+  };
+}
+
 export default function SettingsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -100,6 +109,7 @@ export default function SettingsScreen() {
     evening: "오후 8시",
   });
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // 앱 시작 시 저장된 데이터 로드
   useEffect(() => {
@@ -125,7 +135,50 @@ export default function SettingsScreen() {
     }, [params.selectedCategories, params.selectedTimes, params.updatedUserInfo, params.fromNewsUpdate])
   );
 
-  // 백엔드에서 사용자 관심 뉴스 가져오기 (새로운 API 사용)
+  // 백엔드에서 사용자 정보 가져오기
+  const fetchUserInfo = async (): Promise<UserInfo | null> => {
+    try {
+      const deviceId = await AsyncStorage.getItem("deviceId");
+      if (!deviceId) {
+        console.log("DeviceId가 없습니다");
+        return null;
+      }
+
+      console.log("👤 === 백엔드에서 사용자 정보 가져오기 시작 ===");
+      console.log("📤 DeviceId:", deviceId);
+      
+      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("📥 사용자 정보 응답 상태:", response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("📥 사용자 정보 응답 데이터:", JSON.stringify(result, null, 2));
+        
+        if (result.success && result.data) {
+          return result.data;
+        } else {
+          console.log("📥 사용자 정보 응답 데이터 형식이 올바르지 않음:", result);
+          return null;
+        }
+      } else {
+        const errorText = await response.text();
+        console.log("📥 사용자 정보 HTTP 오류 응답:", response.status, errorText);
+        return null;
+      }
+      
+    } catch (error) {
+      console.error("🚨 사용자 정보 가져오기 오류:", error);
+      return null;
+    }
+  };
+
+  // 백엔드에서 사용자 관심 뉴스 가져오기 (수정된 API 경로)
   const fetchUserNews = async (): Promise<string[] | null> => {
     try {
       const deviceId = await AsyncStorage.getItem("deviceId");
@@ -137,19 +190,19 @@ export default function SettingsScreen() {
       console.log("📰 === 백엔드에서 사용자 관심 뉴스 가져오기 시작 ===");
       console.log("📤 DeviceId:", deviceId);
       
-      // 새로운 API 엔드포인트 사용
-      const response = await fetch(`http://13.124.111.205:8080/apis/users/news/${encodeURIComponent(deviceId)}`, {
+      // 수정된 API 엔드포인트 사용 (apis -> api)
+      const response = await fetch(`http://13.124.111.205:8080/api/users/news/${encodeURIComponent(deviceId)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      console.log("📥 응답 상태:", response.status);
+      console.log("📥 관심 뉴스 응답 상태:", response.status);
 
       if (response.ok) {
         const result: UserNewsResponse = await response.json();
-        console.log("📥 응답 데이터:", JSON.stringify(result, null, 2));
+        console.log("📥 관심 뉴스 응답 데이터:", JSON.stringify(result, null, 2));
         
         if (result.success && result.data && Array.isArray(result.data.news)) {
           // 새로운 응답 형식에서 카테고리명 추출
@@ -162,11 +215,12 @@ export default function SettingsScreen() {
           
           return validCategories;
         } else {
-          console.log("📰 응답 데이터 형식이 올바르지 않음:", result);
+          console.log("📰 관심 뉴스 응답 데이터 형식이 올바르지 않음:", result);
           return null;
         }
       } else {
-        console.log("📰 HTTP 오류 응답:", response.status);
+        const errorText = await response.text();
+        console.log("📰 관심 뉴스 HTTP 오류 응답:", response.status, errorText);
         return null;
       }
       
@@ -176,10 +230,80 @@ export default function SettingsScreen() {
     }
   };
 
+  // 백엔드에서 사용자 알림 시간 가져오기 (새로 추가)
+  const fetchUserSchedule = async (): Promise<{ morning: string; evening: string } | null> => {
+    try {
+      const deviceId = await AsyncStorage.getItem("deviceId");
+      if (!deviceId) {
+        console.log("DeviceId가 없습니다");
+        return null;
+      }
+
+      console.log("⏰ === 백엔드에서 사용자 알림 시간 가져오기 시작 ===");
+      console.log("📤 DeviceId:", deviceId);
+      
+      const response = await fetch(`http://13.124.111.205:8080/api/users/schedules/${encodeURIComponent(deviceId)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("📥 알림 시간 응답 상태:", response.status);
+
+      if (response.ok) {
+        const result: UserScheduleResponse = await response.json();
+        console.log("📥 알림 시간 응답 데이터:", JSON.stringify(result, null, 2));
+        
+        if (result.success && result.data && Array.isArray(result.data.notificationTime)) {
+          const times = result.data.notificationTime;
+          if (times.length >= 2) {
+            return {
+              morning: times[0],
+              evening: times[1],
+            };
+          }
+        }
+        
+        console.log("📥 알림 시간 응답 데이터 형식이 올바르지 않음:", result);
+        return null;
+      } else {
+        const errorText = await response.text();
+        console.log("📥 알림 시간 HTTP 오류 응답:", response.status, errorText);
+        return null;
+      }
+      
+    } catch (error) {
+      console.error("🚨 사용자 알림 시간 가져오기 오류:", error);
+      return null;
+    }
+  };
+
   // 저장된 데이터 불러오기
   const loadSavedData = async () => {
+    setLoading(true);
+    
     try {
-      // 백엔드에서 관심 뉴스 가져오기 시도
+      // 1. 사용자 정보 가져오기
+      const backendUserInfo = await fetchUserInfo();
+      
+      if (backendUserInfo) {
+        console.log("✅ 백엔드에서 사용자 정보 로드됨:", backendUserInfo);
+        setUserInfo(backendUserInfo);
+        // 백엔드 데이터를 로컬에도 동기화
+        await AsyncStorage.setItem("userInfo", JSON.stringify(backendUserInfo));
+      } else {
+        // 백엔드에서 가져오기 실패 시 로컬 데이터 사용
+        console.log("⚠️ 백엔드에서 사용자 정보 가져오기 실패 - 로컬 데이터 사용");
+        const savedUserInfo = await AsyncStorage.getItem("userInfo");
+        if (savedUserInfo) {
+          const parsedUserInfo = JSON.parse(savedUserInfo);
+          setUserInfo(parsedUserInfo);
+          console.log("📱 로컬에서 사용자 정보 로드됨:", parsedUserInfo);
+        }
+      }
+
+      // 2. 관심 뉴스 가져오기
       const backendCategories = await fetchUserNews();
       
       if (backendCategories && backendCategories.length > 0) {
@@ -189,7 +313,7 @@ export default function SettingsScreen() {
         await AsyncStorage.setItem("userCategories", JSON.stringify(backendCategories));
       } else {
         // 백엔드에서 가져오기 실패 시 로컬 데이터 사용
-        console.log("⚠️ 백엔드에서 가져오기 실패 - 로컬 데이터 사용");
+        console.log("⚠️ 백엔드에서 관심 뉴스 가져오기 실패 - 로컬 데이터 사용");
         const savedCategories = await AsyncStorage.getItem("userCategories");
         if (savedCategories) {
           const parsedCategories = JSON.parse(savedCategories);
@@ -198,23 +322,54 @@ export default function SettingsScreen() {
         }
       }
 
-      // 시간 정보 로드
-      const savedTimes = await AsyncStorage.getItem("userTimes");
-      if (savedTimes) {
-        const parsedTimes = JSON.parse(savedTimes);
-        setCurrentTimes(parsedTimes);
-        console.log("⏰ 저장된 시간 정보 로드됨:", parsedTimes);
-      }
-
-      // 사용자 정보 로드
-      const savedUserInfo = await AsyncStorage.getItem("userInfo");
-      if (savedUserInfo) {
-        const parsedUserInfo = JSON.parse(savedUserInfo);
-        setUserInfo(parsedUserInfo);
-        console.log("👤 저장된 사용자 정보 로드됨:", parsedUserInfo);
+      // 3. 알림 시간 가져오기
+      const backendSchedule = await fetchUserSchedule();
+      
+      if (backendSchedule) {
+        console.log("✅ 백엔드에서 알림 시간 로드됨:", backendSchedule);
+        setCurrentTimes(backendSchedule);
+        // 백엔드 데이터를 로컬에도 동기화
+        await AsyncStorage.setItem("userTimes", JSON.stringify(backendSchedule));
+      } else {
+        // 백엔드에서 가져오기 실패 시 로컬 데이터 사용
+        console.log("⚠️ 백엔드에서 알림 시간 가져오기 실패 - 로컬 데이터 사용");
+        const savedTimes = await AsyncStorage.getItem("userTimes");
+        if (savedTimes) {
+          const parsedTimes = JSON.parse(savedTimes);
+          setCurrentTimes(parsedTimes);
+          console.log("📱 로컬에서 알림 시간 로드됨:", parsedTimes);
+        }
       }
     } catch (error) {
       console.error("❌ 저장된 데이터 로드 오류:", error);
+      
+      // 에러 발생 시 사용자에게 알림 (선택사항)
+      Alert.alert(
+        "데이터 로드 오류",
+        "일부 데이터를 불러오는 중 문제가 발생했습니다. 로컬 데이터로 표시됩니다.",
+        [{ text: "확인" }]
+      );
+      
+      // 에러 발생 시에도 로컬 데이터는 로드
+      try {
+        const savedCategories = await AsyncStorage.getItem("userCategories");
+        const savedTimes = await AsyncStorage.getItem("userTimes");
+        const savedUserInfo = await AsyncStorage.getItem("userInfo");
+        
+        if (savedCategories) {
+          setCurrentCategories(JSON.parse(savedCategories));
+        }
+        if (savedTimes) {
+          setCurrentTimes(JSON.parse(savedTimes));
+        }
+        if (savedUserInfo) {
+          setUserInfo(JSON.parse(savedUserInfo));
+        }
+      } catch (localError) {
+        console.error("❌ 로컬 데이터 로드도 실패:", localError);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -334,6 +489,13 @@ export default function SettingsScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>설정</Text>
         </View>
+
+        {/* 로딩 표시 */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+          </View>
+        )}
 
         {/* 사용자 정보 섹션 */}
         <TouchableOpacity 
@@ -512,6 +674,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000000",
     textAlign: "center",
+  },
+  loadingContainer: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#8E8E93",
   },
   userInfoSection: {
     marginHorizontal: 20,
