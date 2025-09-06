@@ -382,7 +382,7 @@ export default function SettingsScreen() {
           
           {/* 변경 안내 문구 추가 */}
           <Text style={styles.changeHintText}>
-            변경을 원하신다면 두 번 눌러주세요
+            사용자 정보 변경을 원하신다면 두 번 눌러주세요
           </Text>
         </TouchableOpacity>
 
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   changeHintText: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#007AFF",
     textAlign: "center",
     fontWeight: "500",
