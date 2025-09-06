@@ -29,8 +29,8 @@ const getCategoryColor = (category: string): string => {
   return colorMap[category] || "#007AFF"; // 기본색상
 };
 
-// 카테고리 매핑 함수들
-const categoryToId = (category: string): number => {
+// 카테고리 매핑 함수들 (안전하게 수정)
+const categoryToId = (category: string): string => {
   const mapping: { [key: string]: number } = {
     "경제": 1,
     "증권": 2,
@@ -41,7 +41,8 @@ const categoryToId = (category: string): number => {
     "사회": 7,
     "오피니언": 8,
   };
-  return mapping[category] || 0;
+  const id = mapping[category];
+  return id ? id.toString() : "0"; // 숫자를 문자열로 변환
 };
 
 const idToCategory = (id: number): string => {
@@ -514,7 +515,9 @@ export default function SettingsScreen() {
             <View style={styles.userInfoContainer}>
               <View style={styles.userInfoItem}>
                 <Text style={styles.userInfoLabel}>닉네임:</Text>
-                <Text style={styles.userInfoValue}>{userInfo.nickname}</Text>
+                <Text style={styles.userInfoValue}>
+                  {userInfo.nickname || "정보 없음"}
+                </Text>
               </View>
               
               {userInfo.name && (
@@ -534,7 +537,7 @@ export default function SettingsScreen() {
               <View style={styles.userInfoItem}>
                 <Text style={styles.userInfoLabel}>Device ID:</Text>
                 <Text style={styles.userInfoValue}>
-                  {userInfo.deviceId.substring(0, 8)}...
+                  {userInfo.deviceId ? userInfo.deviceId.substring(0, 8) + "..." : "정보 없음"}
                 </Text>
               </View>
             </View>
@@ -575,17 +578,21 @@ export default function SettingsScreen() {
                   ]}
                 >
                   <Text style={[styles.categoryText, { textAlign: "center" }]}>
-                    {category}
+                    {category || "카테고리"}
                   </Text>
                 </View>
-                {/* 개발용 ID 표시 (필요시 제거) */}
-                <Text style={styles.categoryIdSmall}>ID: {categoryToId(category)}</Text>
+                {/* 개발용 ID 표시 (안전하게 수정) */}
+                <Text style={styles.categoryIdSmall}>
+                  ID: {categoryToId(category)}
+                </Text>
               </View>
             ))}
           </View>
-          // (삭제됨)
+          <Text style={[styles.questionText, { textAlign: "center" }]}>
+            관심뉴스를 수정 / 변경하시겠어요?
+          </Text>
           <Text style={[styles.instructionText, { textAlign: "center" }]}>
-            관심뉴스 변경을 원하신다면 두 번 눌러주세요.
+            변경을 원하신다면 두 번 눌러주세요.
           </Text>
         </TouchableOpacity>
 
@@ -617,7 +624,7 @@ export default function SettingsScreen() {
             >
               <View style={styles.timeButton}>
                 <Text style={[styles.timeButtonText, { textAlign: "center" }]}>
-                  {currentTimes.morning}
+                  {currentTimes.morning || "미설정"}
                 </Text>
               </View>
               <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
@@ -625,7 +632,7 @@ export default function SettingsScreen() {
               </Text>
               <View style={styles.timeButton}>
                 <Text style={[styles.timeButtonText, { textAlign: "center" }]}>
-                  {currentTimes.evening}
+                  {currentTimes.evening || "미설정"}
                 </Text>
               </View>
               <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
