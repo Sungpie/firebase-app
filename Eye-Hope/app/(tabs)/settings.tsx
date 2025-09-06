@@ -581,10 +581,6 @@ export default function SettingsScreen() {
                     {category || "카테고리"}
                   </Text>
                 </View>
-                {/* 개발용 ID 표시 (안전하게 수정) */}
-                <Text style={styles.categoryIdSmall}>
-                  ID: {categoryToId(category)}
-                </Text>
               </View>
             ))}
           </View>
@@ -774,11 +770,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "500",
-  },
-  categoryIdSmall: {
-    fontSize: 10,
-    color: "#8E8E93",
-    marginTop: 2,
   },
   questionText: {
     fontSize: 16,
