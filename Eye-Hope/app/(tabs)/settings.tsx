@@ -602,11 +602,11 @@ export default function SettingsScreen() {
           accessibilityHint="뉴스 알림을 받을 시간대를 수정할 수 있는 페이지로 이동합니다"
         >
           <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
-            시간대 변경
+            알림 시간대 변경
           </Text>
           <View style={[styles.timeInfoContainer, { alignItems: "center" }]}>
             <Text style={[styles.timeInfoText, { textAlign: "center" }]}>
-              현재 시간대는
+              현재 알림 시간대는
             </Text>
             <View
               style={[
@@ -791,6 +791,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E5EA",
   },
   timeInfoContainer: {
+    marginTop: 16,
     marginBottom: 16,
   },
   timeInfoText: {
