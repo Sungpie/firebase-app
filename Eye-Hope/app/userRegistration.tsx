@@ -23,6 +23,13 @@ interface UserRegistrationData {
   password?: string;
 }
 
+interface UserUpdateData {
+  deviceId: string;
+  name?: string;
+  email?: string;
+  nickname: string;
+}
+
 interface NotificationScheduleData {
   deviceId: string;
   notificationTime: string[];
@@ -83,7 +90,7 @@ export default function UserRegistrationScreen() {
   // 사용자 존재 여부 확인
   const checkUserExists = async (deviceId: string): Promise<boolean> => {
     try {
-      console.log("사용자 존재 여부 확인 중:", deviceId);
+      console.log("👤 사용자 존재 여부 확인 중:", deviceId);
       
       const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
         method: "GET",
@@ -92,17 +99,17 @@ export default function UserRegistrationScreen() {
         },
       });
 
-      console.log("사용자 존재 확인 응답 상태:", response.status);
+      console.log("👤 사용자 존재 확인 응답 상태:", response.status);
       
       if (response.ok) {
         const result = await response.json();
-        console.log("사용자 존재 확인 응답:", result);
+        console.log("👤 사용자 존재 확인 응답:", result);
         return result.success && result.data;
       }
       
       return false;
     } catch (error) {
-      console.error("사용자 존재 확인 오류:", error);
+      console.error("👤 사용자 존재 확인 오류:", error);
       return false;
     }
   };
@@ -110,7 +117,8 @@ export default function UserRegistrationScreen() {
   // 사용자 등록 API 호출
   const registerUser = async (userData: UserRegistrationData) => {
     try {
-      console.log("👤 사용자 등록 API 호출:", JSON.stringify(userData, null, 2));
+      console.log("👤 === 사용자 등록 API 호출 시작 ===");
+      console.log("📤 전송 데이터:", JSON.stringify(userData, null, 2));
       
       const response = await fetch("http://13.124.111.205:8080/api/users/register", {
         method: "POST",
@@ -135,7 +143,39 @@ export default function UserRegistrationScreen() {
 
       return result;
     } catch (error) {
-      console.error("사용자 등록 오류:", error);
+      console.error("👤 사용자 등록 오류:", error);
+      throw error;
+    }
+  };
+
+  // 사용자 정보 업데이트 API 호출 (새로 추가)
+  const updateUser = async (userData: UserUpdateData) => {
+    try {
+      console.log("🔄 === 사용자 정보 업데이트 API 호출 시작 ===");
+      console.log("📤 전송 데이터:", JSON.stringify(userData, null, 2));
+      
+      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(userData.deviceId)}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: userData.name || null,
+          email: userData.email || null,
+          nickname: userData.nickname,
+        }),
+      });
+
+      const result = await response.json();
+      console.log("🔄 사용자 정보 업데이트 응답:", result);
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "사용자 정보 업데이트에 실패했습니다.");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("🔄 사용자 정보 업데이트 오류:", error);
       throw error;
     }
   };
@@ -209,7 +249,7 @@ export default function UserRegistrationScreen() {
     }
   };
 
-  // 완료 버튼 처리
+  // 완료 버튼 처리 (수정됨)
   const handleComplete = async () => {
     // 필수 필드 검증 (닉네임만)
     if (!formData.nickname.trim()) {
@@ -228,8 +268,20 @@ export default function UserRegistrationScreen() {
       const userExists = await checkUserExists(deviceId);
       console.log("👤 사용자 존재 여부:", userExists);
 
-      // 사용자가 존재하지 않는 경우에만 등록
-      if (!userExists) {
+      // 사용자가 존재하면 업데이트, 존재하지 않으면 등록
+      if (userExists) {
+        console.log("🔄 기존 사용자 정보 업데이트 진행");
+        const userUpdateData: UserUpdateData = {
+          deviceId: deviceId,
+          name: undefined, // 빈 값 대신 undefined
+          email: undefined, // 빈 값 대신 undefined
+          nickname: formData.nickname.trim(),
+        };
+
+        await updateUser(userUpdateData);
+        console.log("✅ 사용자 정보 업데이트 성공");
+      } else {
+        console.log("👤 새 사용자 등록 진행");
         const userRegistrationData: UserRegistrationData = {
           deviceId: deviceId,
           name: undefined, // 빈 값 대신 undefined
@@ -240,8 +292,6 @@ export default function UserRegistrationScreen() {
 
         await registerUser(userRegistrationData);
         console.log("✅ 사용자 등록 성공");
-      } else {
-        console.log("ℹ️ 이미 등록된 사용자 - 등록 과정 스킵");
       }
 
       // 사용자 정보를 AsyncStorage에 저장

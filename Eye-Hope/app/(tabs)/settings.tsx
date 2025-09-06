@@ -583,11 +583,9 @@ export default function SettingsScreen() {
               </View>
             ))}
           </View>
-          <Text style={[styles.questionText, { textAlign: "center" }]}>
-            관심뉴스를 수정 / 변경하시겠어요?
-          </Text>
+          // (삭제됨)
           <Text style={[styles.instructionText, { textAlign: "center" }]}>
-            변경을 원하신다면 두 번 눌러주세요.
+            관심뉴스 변경을 원하신다면 두 번 눌러주세요.
           </Text>
         </TouchableOpacity>
 
