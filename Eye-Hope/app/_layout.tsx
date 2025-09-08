@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
@@ -160,73 +161,76 @@ export default function RootLayout() {
 
   // 기존 코드는 그대로 두고, Stack 부분만 수정
 return (
-  <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-    <Stack>
-      <Stack.Screen
-        name="(tabs)"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="selectCategory"
-        options={{
-          headerShown: false,
-          title: "카테고리 선택",
-        }}
-      />
-      <Stack.Screen
-        name="confirmation"
-        options={{
-          headerShown: false,
-          title: "확인",
-        }}
-      />
-      <Stack.Screen
-        name="timeSelect"
-        options={{
-          headerShown: false,
-          title: "시간 선택",
-        }}
-      />
-      <Stack.Screen
-        name="userRegistration"
-        options={{
-          headerShown: false,
-          title: "사용자 등록",
-        }}
-      />
-      {/* 이 부분을 추가하세요 */}
-      <Stack.Screen
-        name="userEdit"
-        options={{
-          headerShown: false,
-          title: "사용자 정보 변경",
-        }}
-      />
-      <Stack.Screen
-        name="newsList"
-        options={{
-          headerShown: false,
-          title: "관심 뉴스",
-        }}
-      />
-      <Stack.Screen
-        name="categoryNews"
-        options={{
-          headerShown: false,
-          title: "카테고리별 뉴스",
-        }}
-      />
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen name="+not-found" />
-    </Stack>
-    <StatusBar style="auto" />
-  </ThemeProvider>
+  <SafeAreaProvider>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
+        <Stack>
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="selectCategory"
+            options={{
+              headerShown: false,
+              title: "카테고리 선택",
+            }}
+          />
+          <Stack.Screen
+            name="confirmation"
+            options={{
+              headerShown: false,
+              title: "확인",
+            }}
+          />
+          <Stack.Screen
+            name="timeSelect"
+            options={{
+              headerShown: false,
+              title: "시간 선택",
+            }}
+          />
+          <Stack.Screen
+            name="userRegistration"
+            options={{
+              headerShown: false,
+              title: "사용자 등록",
+            }}
+          />
+          <Stack.Screen
+            name="userEdit"
+            options={{
+              headerShown: false,
+              title: "사용자 정보 변경",
+            }}
+          />
+          <Stack.Screen
+            name="newsList"
+            options={{
+              headerShown: false,
+              title: "관심 뉴스",
+            }}
+          />
+          <Stack.Screen
+            name="categoryNews"
+            options={{
+              headerShown: false,
+              title: "카테고리별 뉴스",
+            }}
+          />
+          <Stack.Screen
+            name="index"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </SafeAreaView>
+    </ThemeProvider>
+  </SafeAreaProvider>
 );
 }

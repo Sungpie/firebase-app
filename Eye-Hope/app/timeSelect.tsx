@@ -4,7 +4,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   ActivityIndicator,
@@ -261,7 +260,7 @@ export default function TimeSelectScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 안내 문구 */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
@@ -376,7 +375,7 @@ export default function TimeSelectScreen() {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

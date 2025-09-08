@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
@@ -13,6 +12,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface UserInfo {
   deviceId: string;
@@ -42,6 +42,7 @@ export default function UserEditScreen() {
     nickname: "",
   });
   const [originalData, setOriginalData] = useState<UserInfo | null>(null);
+  const insets = useSafeAreaInsets();
 
   // 초기 데이터 설정
   useEffect(() => {
@@ -198,9 +199,9 @@ export default function UserEditScreen() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </TouchableOpacity>
@@ -322,7 +323,7 @@ export default function UserEditScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

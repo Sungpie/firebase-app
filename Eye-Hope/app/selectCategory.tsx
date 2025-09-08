@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -66,7 +65,7 @@ export default function SelectCategoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 - 설정 페이지에서 온 경우에만 표시 */}
       {fromSettings === "true" && (
         <View style={styles.header}>
@@ -157,7 +156,7 @@ export default function SelectCategoryScreen() {
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

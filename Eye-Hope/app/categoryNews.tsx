@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Pressable,
   ActivityIndicator,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface NewsItem {
   id: string;
@@ -50,6 +50,7 @@ export default function CategoryNewsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (category) {
@@ -356,8 +357,8 @@ export default function CategoryNewsScreen() {
 
   if (loading && newsData.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+      <View style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top }]}>
           <Pressable style={styles.backButton} onPress={handleGoBack}>
             <Ionicons name="chevron-back" size={24} color="#007AFF" />
           </Pressable>
@@ -368,14 +369,14 @@ export default function CategoryNewsScreen() {
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>뉴스를 불러오는 중입니다</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <Pressable style={styles.backButton} onPress={handleGoBack}>
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </Pressable>
@@ -486,7 +487,7 @@ export default function CategoryNewsScreen() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

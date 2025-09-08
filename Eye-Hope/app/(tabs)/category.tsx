@@ -38,7 +38,9 @@ export default function CategoryScreen() {
       <View style={styles.header}>
         <Text style={[styles.title, { textAlign: "center" }]}>카테고리</Text>
         <Text style={styles.subtitle}>
-          원하는 카테고리를 선택해서 최신 뉴스를 확인하세요
+          <Text style={{ textAlign: "center" }}>
+            원하는 카테고리를 선택해서 최신 뉴스를 확인하세요
+          </Text>
         </Text>
       </View>
 

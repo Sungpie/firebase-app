@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Pressable,
   StatusBar,
@@ -355,18 +354,18 @@ export default function NewsListScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>뉴스를 불러오는 중...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
       {/* 헤더 */}
@@ -427,7 +426,7 @@ export default function NewsListScreen() {
           <Text style={styles.navText}>설정</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -278,8 +278,8 @@ export default function InterestNewsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>관심뉴스</Text>
-          <Text style={styles.subtitle}>뉴스를 불러오는 중...</Text>
+          <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
+          <Text style={[styles.subtitle, { textAlign: "center" }]}>뉴스를 불러오는 중...</Text>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
@@ -294,7 +294,7 @@ export default function InterestNewsScreen() {
       {/* 상단 제목 */}
       <View style={styles.header}>
         <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, { textAlign: "center" }]}>
           {categories.length > 0
             ? `${categories.join(", ")} 카테고리의 최신 뉴스입니다`
             : "설정에서 관심 카테고리를 선택해주세요"}

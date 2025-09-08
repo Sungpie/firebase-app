@@ -5,7 +5,6 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   ActivityIndicator,
@@ -14,6 +13,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface UserRegistrationData {
   deviceId: string;
@@ -48,6 +48,7 @@ export default function UserRegistrationScreen() {
     email: "",
     nickname: "",
   });
+  const insets = useSafeAreaInsets();
 
   // 파라미터에서 데이터 파싱 및 디버깅
   const selectedCategories = categories ? JSON.parse(categories) : [];
@@ -380,9 +381,9 @@ export default function UserRegistrationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <Pressable style={styles.backButton} onPress={handleGoBack}>
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </Pressable>
@@ -498,7 +499,7 @@ export default function UserRegistrationScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

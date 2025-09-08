@@ -533,7 +533,10 @@ export default function SettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* 상단 제목 */}
         <View style={styles.header}>
-          <Text style={styles.title}>설정</Text>
+          <Text style={[styles.title, { textAlign: "center" }]}>설정</Text>
+          <Text style={[styles.subtitle, { textAlign: "center" }]}>
+            사용자 정보와 현재 관심뉴스를 수정할 수 있습니다.
+          </Text>
         </View>
 
         {/* 로딩 표시 */}
@@ -727,6 +730,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000000",
     textAlign: "center",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#8E8E93",
+    lineHeight: 22,
   },
   loadingContainer: {
     paddingVertical: 20,

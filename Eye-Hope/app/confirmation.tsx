@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet, SafeAreaView, Alert, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
@@ -342,7 +342,7 @@ export default function ConfirmationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 안내 문구 박스 */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
@@ -410,7 +410,7 @@ export default function ConfirmationScreen() {
           <Text style={styles.modifyButtonText}>아니에요 수정할래요</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
