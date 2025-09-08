@@ -298,14 +298,26 @@ export default function CategoryNewsScreen() {
 
   const formatTimeAgo = (publishedAt: string) => {
     const now = new Date();
-    const published = new Date(publishedAt);
-    const diffInHours = Math.floor(
-      (now.getTime() - published.getTime()) / (1000 * 60 * 60)
-    );
+    
+    // UTC 시간을 한국 시간(KST)으로 변환 (+9시간)
+    const publishedUTC = new Date(publishedAt);
+    const publishedKST = new Date(publishedUTC.getTime() + (9 * 60 * 60 * 1000));
+    
+    // 현재 시간과 한국 시간으로 변환된 발행 시간의 차이 계산
+    const diffInMilliseconds = now.getTime() - publishedKST.getTime();
+    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
 
-    if (diffInHours < 1) return "방금 전";
+    // 1분 미만
+    if (diffInMinutes < 1) return "방금 전";
+    
+    // 1시간 미만 (분으로 표기)
+    if (diffInHours < 1) return `${diffInMinutes}분 전`;
+    
+    // 24시간 미만 (시간으로 표기)
     if (diffInHours < 24) return `${diffInHours}시간 전`;
 
+    // 24시간 이상 (일로 표기)
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}일 전`;
   };

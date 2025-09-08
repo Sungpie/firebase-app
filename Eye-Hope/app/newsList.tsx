@@ -323,16 +323,31 @@ export default function NewsListScreen() {
     router.back();
   };
 
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // 시간 표시 함수
+  const formatTimeAgo = (publishedAt: string) => {
+    const now = new Date();
+    
+    // UTC 시간을 한국 시간(KST)으로 변환 (+9시간)
+    const publishedUTC = new Date(publishedAt);
+    const publishedKST = new Date(publishedUTC.getTime() + (9 * 60 * 60 * 1000));
+    
+    // 현재 시간과 한국 시간으로 변환된 발행 시간의 차이 계산
+    const diffInMilliseconds = now.getTime() - publishedKST.getTime();
+    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+
+    // 1분 미만
+    if (diffInMinutes < 1) return "방금 전";
+    
+    // 1시간 미만 (분으로 표기)
+    if (diffInHours < 1) return `${diffInMinutes}분 전`;
+    
+    // 24시간 미만 (시간으로 표기)
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+
+    // 24시간 이상 (일로 표기)
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}일 전`;
   };
 
   // category가 없을 경우 기본값 설정
@@ -390,7 +405,7 @@ export default function NewsListScreen() {
             <View style={styles.newsMetaContainer}>
               <Text style={styles.newsSource}>{newsItem.source}</Text>
               <Text style={styles.newsMeta}>
-                {formatDate(newsItem.createdAt)}
+                {formatTimeAgo(newsItem.createdAt)}
               </Text>
             </View>
           </View>
