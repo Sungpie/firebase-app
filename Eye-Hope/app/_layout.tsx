@@ -14,7 +14,24 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
+import { usePathname, useGlobalSearchParams } from "expo-router";
+import analytics from '@react-native-firebase/analytics';
+
 export default function RootLayout() {
+
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+
+  useEffect(() => {
+    const logScreenView = async () => {
+      await analytics().logScreenView({
+        screen_name: pathname,
+        screen_class: pathname,
+      });
+    };
+  logScreenView();
+}, [pathname, params]);
+
   const colorScheme = useColorScheme();
   const segments = useSegments();
   const router = useRouter();
