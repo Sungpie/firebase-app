@@ -93,7 +93,7 @@ export default function UserRegistrationScreen() {
     try {
       console.log("👤 사용자 존재 여부 확인 중:", deviceId);
       
-      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
+      const response = await fetch(`https://eyehope.site/api/users/${encodeURIComponent(deviceId)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +121,7 @@ export default function UserRegistrationScreen() {
       console.log("👤 === 사용자 등록 API 호출 시작 ===");
       console.log("📤 전송 데이터:", JSON.stringify(userData, null, 2));
       
-      const response = await fetch("http://13.124.111.205:8080/api/users/register", {
+      const response = await fetch("https://eyehope.site/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +155,7 @@ export default function UserRegistrationScreen() {
       console.log("🔄 === 사용자 정보 업데이트 API 호출 시작 ===");
       console.log("📤 전송 데이터:", JSON.stringify(userData, null, 2));
       
-      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(userData.deviceId)}`, {
+      const response = await fetch(`https://eyehope.site/api/users/${encodeURIComponent(userData.deviceId)}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ export default function UserRegistrationScreen() {
       console.log("🌐 === 알림 시간 등록 API 호출 시작 ===");
       console.log("📤 전송 데이터:", JSON.stringify(scheduleData, null, 2));
       
-      const response = await fetch("http://13.124.111.205:8080/api/users/schedules", {
+      const response = await fetch("https://eyehope.site/api/users/schedules", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

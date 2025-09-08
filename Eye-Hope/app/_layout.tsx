@@ -74,7 +74,7 @@ export default function RootLayout() {
         console.log("🔐 백엔드 사용자 확인 중...");
         
         const response = await Promise.race([
-          fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
+          fetch(`https://eyehope.site/api/users/${encodeURIComponent(deviceId)}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
           }),

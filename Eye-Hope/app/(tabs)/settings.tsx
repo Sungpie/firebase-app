@@ -151,7 +151,7 @@ export default function SettingsScreen() {
       console.log("👤 === 백엔드에서 사용자 정보 가져오기 시작 ===");
       console.log("📤 DeviceId:", deviceId);
       
-      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(deviceId)}`, {
+      const response = await fetch(`https://eyehope.site/api/users/${encodeURIComponent(deviceId)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +195,7 @@ export default function SettingsScreen() {
       console.log("📤 DeviceId:", deviceId);
       
       // 수정된 API 엔드포인트 사용 (apis -> api)
-      const response = await fetch(`http://13.124.111.205:8080/api/users/news/${encodeURIComponent(deviceId)}`, {
+      const response = await fetch(`https://eyehope.site/api/users/news/${encodeURIComponent(deviceId)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

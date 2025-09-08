@@ -70,7 +70,7 @@ export default function UserEditScreen() {
       console.log("👤 === 사용자 정보 업데이트 API 호출 시작 ===");
       console.log("📤 전송 데이터:", JSON.stringify(userData, null, 2));
       
-      const response = await fetch(`http://13.124.111.205:8080/api/users/${encodeURIComponent(userData.deviceId)}`, {
+      const response = await fetch(`https://eyehope.site/api/users/${encodeURIComponent(userData.deviceId)}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

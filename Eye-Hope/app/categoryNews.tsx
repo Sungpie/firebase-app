@@ -71,7 +71,7 @@ export default function CategoryNewsScreen() {
       }
 
       // API 명세서에 따른 올바른 엔드포인트 사용
-      const url = `http://13.124.111.205:8080/api/news/category/${encodeURIComponent(
+      const url = `https://eyehope.site/api/news/category/${encodeURIComponent(
         category
       )}?page=${pageNum}&size=10`;
 

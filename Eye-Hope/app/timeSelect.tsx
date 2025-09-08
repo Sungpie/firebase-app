@@ -80,7 +80,7 @@ export default function TimeSelectScreen() {
       console.log("🔄 === 알림 시간 업데이트 API 호출 시작 ===");
       console.log("📤 전송 데이터:", JSON.stringify(scheduleData, null, 2));
       
-      const response = await fetch("http://13.124.111.205:8080/api/users/schedules", {
+      const response = await fetch("https://eyehope.site/api/users/schedules", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
