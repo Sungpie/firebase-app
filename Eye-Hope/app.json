@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sungpie.eyehope",
+      "bundleIdentifier": "com.eyehope.eyehope",
       "googleServicesFile": "./GoogleService-Info.plist",
       "deploymentTarget": "14.0",
       "infoPlist": {
@@ -31,7 +31,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.sungpie.eyehope",
+      "package": "com.eyehope.eyehope",
       "googleServicesFile": "./google-services.json",
       "usesCleartextTraffic": true
     },
