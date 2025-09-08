@@ -352,38 +352,22 @@ export default function UserRegistrationScreen() {
         }
       }
 
-      // 결과에 따른 메시지 표시
-      const message = notificationSuccess 
-        ? "등록이 완료되었습니다!"
-        : "사용자 등록은 완료되었으나, 알림 시간 설정에 문제가 있었습니다.\n설정에서 나중에 변경할 수 있습니다.";
-
-      Alert.alert(
-        "완료",
-        message,
-        [
-          {
-            text: "확인",
-            onPress: () => {
-              router.push({
-                pathname: "/(tabs)",
-                params: {
-                  categories: categories,
-                  selectedTimes: selectedTimes,
-                },
-              });
-            },
-          },
-        ]
-      );
+      // 등록 성공 시 바로 관심뉴스 페이지로 이동 (팝업 없음)
+      console.log("✅ 사용자 등록 완료 - 바로 관심뉴스 페이지로 이동");
+      router.push({
+        pathname: "/(tabs)",
+        params: {
+          categories: categories,
+          selectedTimes: selectedTimes,
+        },
+      });
 
     } catch (error) {
       console.error("등록 과정 오류:", error);
       
-      const errorMessage = error instanceof Error ? error.message : "처리 중 오류가 발생했습니다.";
-      
       Alert.alert(
         "오류",
-        errorMessage,
+        "닉네임 설정에 문제가 발생했어요. 다시 입력해주세요!",
         [{ text: "확인" }]
       );
     } finally {

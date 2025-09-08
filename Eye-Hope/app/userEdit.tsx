@@ -146,34 +146,22 @@ export default function UserEditScreen() {
       await AsyncStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
       console.log("사용자 정보가 로컬에 저장되었습니다:", updatedUserInfo);
 
-      Alert.alert(
-        "완료",
-        "사용자 정보가 성공적으로 업데이트되었습니다.",
-        [
-          {
-            text: "확인",
-            onPress: () => {
-              // 설정 페이지로 돌아가면서 업데이트된 정보 전달
-              router.push({
-                pathname: "/(tabs)/settings",
-                params: {
-                  updatedUserInfo: JSON.stringify(updatedUserInfo),
-                  fromUserEdit: "true",
-                },
-              });
-            },
-          },
-        ]
-      );
+      // 업데이트 성공 시 바로 설정 페이지로 돌아가기 (팝업 없음)
+      console.log("✅ 사용자 정보 업데이트 완료 - 바로 설정 페이지로 이동");
+      router.push({
+        pathname: "/(tabs)/settings",
+        params: {
+          updatedUserInfo: JSON.stringify(updatedUserInfo),
+          fromUserEdit: "true",
+        },
+      });
 
     } catch (error) {
       console.error("사용자 정보 업데이트 오류:", error);
       
-      const errorMessage = error instanceof Error ? error.message : "사용자 정보 업데이트 중 오류가 발생했습니다.";
-      
       Alert.alert(
         "오류",
-        errorMessage,
+        "닉네임 설정에 문제가 발생했어요. 다시 입력해주세요!",
         [
           {
             text: "확인",
