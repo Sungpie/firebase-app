@@ -6,8 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function SelectCategoryScreen() {
   // 다중 선택을 위한 상태: string[] 배열
@@ -41,6 +43,11 @@ export default function SelectCategoryScreen() {
     }
   };
 
+  // 뒤로가기 처리
+  const handleGoBack = () => {
+    router.back();
+  };
+
   // 완료 버튼 클릭 시, 선택된 카테고리 배열을 쿼리 파라미터로 전달
   const handleComplete = () => {
     if (selectedCategories.length > 0) {
@@ -60,6 +67,17 @@ export default function SelectCategoryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* 상단 헤더 - 설정 페이지에서 온 경우에만 표시 */}
+      {fromSettings === "true" && (
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+            <Ionicons name="chevron-back" size={24} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>관심분야 선택</Text>
+          <View style={styles.placeholder} />
+        </View>
+      )}
+
       {/* 상단 안내 문구 */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
@@ -147,6 +165,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5EA",
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000000",
+    textAlign: "center",
+  },
+  placeholder: {
+    width: 40,
   },
   instructionContainer: {
     marginHorizontal: 20,

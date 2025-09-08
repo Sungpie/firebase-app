@@ -196,31 +196,6 @@ export default function UserEditScreen() {
     }
   };
 
-  // 입력 필드 초기화
-  const handleReset = () => {
-    if (!originalData) return;
-    
-    Alert.alert(
-      "초기화",
-      "입력한 내용을 모두 초기화하시겠습니까?",
-      [
-        {
-          text: "취소",
-          style: "cancel",
-        },
-        {
-          text: "초기화",
-          onPress: () => {
-            setFormData({
-              name: originalData.name || "",
-              email: originalData.email || "",
-              nickname: originalData.nickname || "",
-            });
-          },
-        },
-      ]
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -230,9 +205,7 @@ export default function UserEditScreen() {
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>사용자 정보 변경</Text>
-        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-          <Ionicons name="refresh-outline" size={20} color="#007AFF" />
-        </TouchableOpacity>
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -379,9 +352,8 @@ const styles = StyleSheet.create({
     color: "#000000",
     textAlign: "center",
   },
-  resetButton: {
-    padding: 8,
-    marginRight: -8,
+  placeholder: {
+    width: 40,
   },
   content: {
     flex: 1,
