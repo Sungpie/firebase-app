@@ -231,54 +231,54 @@ export default function SettingsScreen() {
     }
   };
 
-  // 백엔드에서 사용자 알림 시간 가져오기 (새로 추가)
-  const fetchUserSchedule = async (): Promise<{ morning: string; evening: string } | null> => {
-    try {
-      const deviceId = await AsyncStorage.getItem("deviceId");
-      if (!deviceId) {
-        console.log("DeviceId가 없습니다");
-        return null;
-      }
+  // 백엔드에서 사용자 알림 시간 가져오기 - 비활성화
+  // const fetchUserSchedule = async (): Promise<{ morning: string; evening: string } | null> => {
+  //   try {
+  //     const deviceId = await AsyncStorage.getItem("deviceId");
+  //     if (!deviceId) {
+  //       console.log("DeviceId가 없습니다");
+  //       return null;
+  //     }
 
-      console.log("⏰ === 백엔드에서 사용자 알림 시간 가져오기 시작 ===");
-      console.log("📤 DeviceId:", deviceId);
-      
-      const response = await fetch(`http://13.124.111.205:8080/api/users/schedules/${encodeURIComponent(deviceId)}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+  //     console.log("⏰ === 백엔드에서 사용자 알림 시간 가져오기 시작 ===");
+  //     console.log("📤 DeviceId:", deviceId);
+  //     
+  //     const response = await fetch(`http://13.124.111.205:8080/api/users/schedules/${encodeURIComponent(deviceId)}`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
 
-      console.log("📥 알림 시간 응답 상태:", response.status);
+  //     console.log("📥 알림 시간 응답 상태:", response.status);
 
-      if (response.ok) {
-        const result: UserScheduleResponse = await response.json();
-        console.log("📥 알림 시간 응답 데이터:", JSON.stringify(result, null, 2));
-        
-        if (result.success && result.data && Array.isArray(result.data.notificationTime)) {
-          const times = result.data.notificationTime;
-          if (times.length >= 2) {
-            return {
-              morning: times[0],
-              evening: times[1],
-            };
-          }
-        }
-        
-        console.log("📥 알림 시간 응답 데이터 형식이 올바르지 않음:", result);
-        return null;
-      } else {
-        const errorText = await response.text();
-        console.log("📥 알림 시간 HTTP 오류 응답:", response.status, errorText);
-        return null;
-      }
-      
-    } catch (error) {
-      console.error("🚨 사용자 알림 시간 가져오기 오류:", error);
-      return null;
-    }
-  };
+  //     if (response.ok) {
+  //       const result: UserScheduleResponse = await response.json();
+  //       console.log("📥 알림 시간 응답 데이터:", JSON.stringify(result, null, 2));
+  //       
+  //       if (result.success && result.data && Array.isArray(result.data.notificationTime)) {
+  //         const times = result.data.notificationTime;
+  //         if (times.length >= 2) {
+  //           return {
+  //             morning: times[0],
+  //             evening: times[1],
+  //           };
+  //         }
+  //       }
+  //       
+  //       console.log("📥 알림 시간 응답 데이터 형식이 올바르지 않음:", result);
+  //       return null;
+  //     } else {
+  //       const errorText = await response.text();
+  //       console.log("📥 알림 시간 HTTP 오류 응답:", response.status, errorText);
+  //       return null;
+  //     }
+  //     
+  //   } catch (error) {
+  //     console.error("🚨 사용자 알림 시간 가져오기 오류:", error);
+  //     return null;
+  //   }
+  // };
 
   // 저장된 데이터 불러오기
   const loadSavedData = async () => {
@@ -323,24 +323,24 @@ export default function SettingsScreen() {
         }
       }
 
-      // 3. 알림 시간 가져오기
-      const backendSchedule = await fetchUserSchedule();
-      
-      if (backendSchedule) {
-        console.log("✅ 백엔드에서 알림 시간 로드됨:", backendSchedule);
-        setCurrentTimes(backendSchedule);
-        // 백엔드 데이터를 로컬에도 동기화
-        await AsyncStorage.setItem("userTimes", JSON.stringify(backendSchedule));
-      } else {
-        // 백엔드에서 가져오기 실패 시 로컬 데이터 사용
-        console.log("⚠️ 백엔드에서 알림 시간 가져오기 실패 - 로컬 데이터 사용");
-        const savedTimes = await AsyncStorage.getItem("userTimes");
-        if (savedTimes) {
-          const parsedTimes = JSON.parse(savedTimes);
-          setCurrentTimes(parsedTimes);
-          console.log("📱 로컬에서 알림 시간 로드됨:", parsedTimes);
-        }
-      }
+      // 3. 알림 시간 가져오기 - 비활성화
+      // const backendSchedule = await fetchUserSchedule();
+      // 
+      // if (backendSchedule) {
+      //   console.log("✅ 백엔드에서 알림 시간 로드됨:", backendSchedule);
+      //   setCurrentTimes(backendSchedule);
+      //   // 백엔드 데이터를 로컬에도 동기화
+      //   await AsyncStorage.setItem("userTimes", JSON.stringify(backendSchedule));
+      // } else {
+      //   // 백엔드에서 가져오기 실패 시 로컬 데이터 사용
+      //   console.log("⚠️ 백엔드에서 알림 시간 가져오기 실패 - 로컬 데이터 사용");
+      //   const savedTimes = await AsyncStorage.getItem("userTimes");
+      //   if (savedTimes) {
+      //     const parsedTimes = JSON.parse(savedTimes);
+      //     setCurrentTimes(parsedTimes);
+      //     console.log("📱 로컬에서 알림 시간 로드됨:", parsedTimes);
+      //   }
+      // }
     } catch (error) {
       console.error("❌ 저장된 데이터 로드 오류:", error);
       
@@ -360,9 +360,9 @@ export default function SettingsScreen() {
         if (savedCategories) {
           setCurrentCategories(JSON.parse(savedCategories));
         }
-        if (savedTimes) {
-          setCurrentTimes(JSON.parse(savedTimes));
-        }
+        // if (savedTimes) {
+        //   setCurrentTimes(JSON.parse(savedTimes));
+        // }
         if (savedUserInfo) {
           setUserInfo(JSON.parse(savedUserInfo));
         }
@@ -384,18 +384,18 @@ export default function SettingsScreen() {
     }
   };
 
-  // AsyncStorage에 시간 정보 저장
-  const saveTimesToStorage = async (times: {
-    morning: string;
-    evening: string;
-  }) => {
-    try {
-      await AsyncStorage.setItem("userTimes", JSON.stringify(times));
-      console.log("시간 정보가 저장되었습니다:", times);
-    } catch (error) {
-      console.error("시간 정보 저장 오류:", error);
-    }
-  };
+  // AsyncStorage에 시간 정보 저장 - 비활성화
+  // const saveTimesToStorage = async (times: {
+  //   morning: string;
+  //   evening: string;
+  // }) => {
+  //   try {
+  //     await AsyncStorage.setItem("userTimes", JSON.stringify(times));
+  //     console.log("시간 정보가 저장되었습니다:", times);
+  //   } catch (error) {
+  //     console.error("시간 정보 저장 오류:", error);
+  //   }
+  // };
 
   // 파라미터 업데이트 처리 함수
   const handleParamsUpdate = () => {
@@ -417,24 +417,24 @@ export default function SettingsScreen() {
       }
     }
 
-    // selectedTimes 파라미터가 있으면 업데이트
-    if (params.selectedTimes) {
-      try {
-        const times = JSON.parse(params.selectedTimes as string);
-        if (times.morning && times.evening) {
-          const newTimes = {
-            morning: times.morning,
-            evening: times.evening,
-          };
-          console.log("시간 상태 업데이트:", newTimes);
-          setCurrentTimes(newTimes);
-          // AsyncStorage에 시간 정보 저장
-          saveTimesToStorage(newTimes);
-        }
-      } catch (error) {
-        console.error("시간 파라미터 파싱 오류:", error);
-      }
-    }
+    // selectedTimes 파라미터 처리 - 비활성화
+    // if (params.selectedTimes) {
+    //   try {
+    //     const times = JSON.parse(params.selectedTimes as string);
+    //     if (times.morning && times.evening) {
+    //       const newTimes = {
+    //         morning: times.morning,
+    //         evening: times.evening,
+    //       };
+    //       console.log("시간 상태 업데이트:", newTimes);
+    //       setCurrentTimes(newTimes);
+    //       // AsyncStorage에 시간 정보 저장
+    //       saveTimesToStorage(newTimes);
+    //     }
+    //   } catch (error) {
+    //     console.error("시간 파라미터 파싱 오류:", error);
+    //   }
+    // }
 
     // updatedUserInfo 파라미터가 있으면 업데이트
     if (params.updatedUserInfo) {
@@ -465,12 +465,13 @@ export default function SettingsScreen() {
     });
   };
 
-  const handleTimeChange = () => {
-    router.push({
-      pathname: "/timeSelect" as any,
-      params: { fromSettings: "true" },
-    });
-  };
+  // 알림 시간 변경 기능 비활성화
+  // const handleTimeChange = () => {
+  //   router.push({
+  //     pathname: "/timeSelect" as any,
+  //     params: { fromSettings: "true" },
+  //   });
+  // };
 
   // 사용자 정보 변경 페이지로 이동
   const handleUserInfoChange = () => {
@@ -518,14 +519,14 @@ export default function SettingsScreen() {
     return label;
   };
 
-  // 접근성을 위한 시간 설정 텍스트 생성
-  const getTimeAccessibilityLabel = () => {
-    let label = "알림 시간대 변경. ";
-    label += `현재 알림 시간대는 ${currentTimes.morning || "미설정"}와 ${currentTimes.evening || "미설정"}에요. `;
-    label += "시간대 변경을 원하신다면 두 번 눌러주세요.";
-    
-    return label;
-  };
+  // 알림 시간 관련 접근성 함수 비활성화
+  // const getTimeAccessibilityLabel = () => {
+  //   let label = "알림 시간대 변경. ";
+  //   label += `현재 알림 시간대는 ${currentTimes.morning || "미설정"}와 ${currentTimes.evening || "미설정"}에요. `;
+  //   label += "시간대 변경을 원하신다면 두 번 눌러주세요.";
+  //   
+  //   return label;
+  // };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -642,7 +643,8 @@ export default function SettingsScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* 시간대 변경 섹션 - 접근성 개선 */}
+        {/* 시간대 변경 섹션 - 숨김 처리 */}
+        {/* 
         <TouchableOpacity
           style={[styles.timeChangeSection, { alignItems: "center" }]}
           onPress={handleTimeChange}
@@ -692,6 +694,7 @@ export default function SettingsScreen() {
             시간대 변경을 원하신다면 두 번 눌러주세요.
           </Text>
         </TouchableOpacity>
+        */}
 
         {/* 앱 정보 섹션 */}
         <View style={styles.appInfoSection}>

@@ -129,7 +129,7 @@ export default function TimeSelectScreen() {
 
     const selectedTimes = {
       morning: selectedMorningTime || "09:00", // 기본값 설정
-      evening: selectedEveningTime || "18:00", // 기본값 설정
+      evening: selectedEveningTime || "12:45", // 기본값 설정
     };
 
     console.log("=== 시간 선택 완료 ===");

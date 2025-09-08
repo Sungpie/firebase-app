@@ -334,34 +334,20 @@ export default function UserRegistrationScreen() {
         } catch (notificationError) {
           console.error("❌ 알림 시간 등록 실패:", notificationError);
           notificationSuccess = false;
-          
-          // 기본값으로 재시도
-          try {
-            console.log("⏰ 기본값으로 재시도");
-            const defaultData: NotificationScheduleData = {
-              deviceId: deviceId,
-              notificationTime: ["09:00", "18:00"],
-            };
-            
-            await registerNotificationSchedule(defaultData);
-            console.log("✅ 기본값으로 알림 시간 등록 성공!");
-            notificationSuccess = true;
-          } catch (defaultError) {
-            console.error("❌ 기본값 등록도 실패:", defaultError);
-          }
         }
       } else {
-        console.log("⏰ timeData 없음 - 기본값으로 등록 시도");
+        console.log("⏰ timeData 없음 - 기본 알림 시간으로 등록");
         try {
+          // 기본 알림 시간으로 전송 (09:00, 12:45)
           const defaultData: NotificationScheduleData = {
             deviceId: deviceId,
-            notificationTime: ["09:00", "18:00"],
+            notificationTime: ["09:00", "12:45"],
           };
           
           await registerNotificationSchedule(defaultData);
-          console.log("✅ 기본값으로 알림 시간 등록 성공!");
+          console.log("✅ 기본 알림 시간으로 등록 성공!");
         } catch (defaultError) {
-          console.error("❌ 기본값 등록 실패:", defaultError);
+          console.error("❌ 기본 알림 시간 등록 실패:", defaultError);
           notificationSuccess = false;
         }
       }
@@ -492,7 +478,7 @@ export default function UserRegistrationScreen() {
             </Text>
           </View>
 
-          {timeData && (
+          {timeData && timeData.morning && timeData.evening && (
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>알림 시간:</Text>
               <Text style={styles.summaryValue}>

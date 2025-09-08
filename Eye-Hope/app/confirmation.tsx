@@ -271,11 +271,14 @@ export default function ConfirmationScreen() {
           },
         });
       } else {
-        console.log("시간대 선택으로 이동");
-        // 일반 플로우라면 timeSelect 화면으로 이동
+        console.log("사용자 등록으로 이동");
+        // 일반 플로우라면 바로 사용자 등록 화면으로 이동 (알림 시간은 빈 배열로 전송)
         router.push({
-          pathname: "/timeSelect",
-          params: { categories: JSON.stringify(selectedCategories) },
+          pathname: "/userRegistration",
+          params: { 
+            categories: JSON.stringify(selectedCategories),
+            selectedTimes: JSON.stringify({ morning: "", evening: "" })
+          },
         });
       }
 
@@ -303,8 +306,11 @@ export default function ConfirmationScreen() {
                 });
               } else {
                 router.push({
-                  pathname: "/timeSelect",
-                  params: { categories: JSON.stringify(selectedCategories) },
+                  pathname: "/userRegistration",
+                  params: { 
+                    categories: JSON.stringify(selectedCategories),
+                    selectedTimes: JSON.stringify({ morning: "", evening: "" })
+                  },
                 });
               }
             },
