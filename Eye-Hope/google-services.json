@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1004145507225",
+    "project_id": "eye-hope",
+    "storage_bucket": "eye-hope.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1004145507225:android:28993c09b92f3193a13108",
+        "android_client_info": {
+          "package_name": "com.eyehope.eyehope"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmoXw4yfJzU5SUwwmBm-9AoYhtlF6oqH8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
