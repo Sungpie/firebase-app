@@ -10,6 +10,7 @@ import {
   Alert,
   Linking, // Linking import 추가
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -354,7 +355,7 @@ export default function CategoryNewsScreen() {
   if (loading && newsData.length === 0) {
     return (
       <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 25, 35) : Math.max(insets.top + 10, 20) }]}>
           <Pressable style={styles.backButton} onPress={handleGoBack}>
             <Ionicons name="chevron-back" size={24} color="#007AFF" />
           </Pressable>
@@ -372,7 +373,7 @@ export default function CategoryNewsScreen() {
   if (error) {
     return (
       <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 25, 35) : Math.max(insets.top + 10, 20) }]}>
           <Pressable style={styles.backButton} onPress={handleGoBack}>
             <Ionicons name="chevron-back" size={24} color="#007AFF" />
           </Pressable>
@@ -397,7 +398,7 @@ export default function CategoryNewsScreen() {
   return (
     <View style={styles.container}>
       {/* 상단 헤더 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 25, 35) : Math.max(insets.top + 10, 20) }]}>
         <Pressable style={styles.backButton} onPress={handleGoBack}>
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </Pressable>
@@ -533,7 +534,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#000000",
     textAlign: "center",

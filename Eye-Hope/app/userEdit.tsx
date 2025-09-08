@@ -201,7 +201,7 @@ export default function UserEditScreen() {
   return (
     <View style={styles.container}>
       {/* 상단 헤더 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top + 10, 20) }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </TouchableOpacity>

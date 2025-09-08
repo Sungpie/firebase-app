@@ -6,12 +6,15 @@ import {
   SafeAreaView,
   ScrollView,
   Pressable,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CategoryScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const categories = [
     { name: "경제", icon: "trending-up" as const, color: "#FF6B6B" },
@@ -35,7 +38,7 @@ export default function CategoryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 20, 30) : 20 }]}>
         <Text style={[styles.title, { textAlign: "center" }]}>카테고리</Text>
         <Text style={styles.subtitle}>
           <Text style={{ textAlign: "center" }}>

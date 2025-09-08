@@ -9,11 +9,13 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SelectCategoryScreen() {
   // 다중 선택을 위한 상태: string[] 배열
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { fromSettings } = useLocalSearchParams<{ fromSettings?: string }>();
 
   const categories = [
@@ -68,7 +70,7 @@ export default function SelectCategoryScreen() {
     <View style={styles.container}>
       {/* 상단 헤더 - 설정 페이지에서 온 경우에만 표시 */}
       {fromSettings === "true" && (
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top + 10, 20) }]}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
             <Ionicons name="chevron-back" size={24} color="#007AFF" />
           </TouchableOpacity>
@@ -123,39 +125,39 @@ export default function SelectCategoryScreen() {
             );
           })}
         </View>
-      </ScrollView>
 
-      {/* 하단 완료 버튼 */}
-      <View style={styles.completeButtonContainer}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.completeButton,
-            selectedCategories.length === 0 && styles.disabledCompleteButton,
-            pressed && styles.pressedButton,
-          ]}
-          onPress={handleComplete}
-          disabled={selectedCategories.length === 0}
-          onPressIn={() => console.log("완료 버튼 터치됨")}
-          accessibilityLabel="선택 완료 버튼"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: selectedCategories.length === 0 }}
-          accessibilityHint={
-            selectedCategories.length > 0
-              ? "선택한 카테고리로 진행하려면 두 번 탭하세요"
-              : "카테고리를 먼저 선택해주세요"
-          }
-        >
-          <Text
-            style={[
-              styles.completeButtonText,
-              selectedCategories.length === 0 &&
-                styles.disabledCompleteButtonText,
+        {/* 완료 버튼 - 카테고리 그리드 바로 밑에 위치 */}
+        <View style={styles.completeButtonContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.completeButton,
+              selectedCategories.length === 0 && styles.disabledCompleteButton,
+              pressed && styles.pressedButton,
             ]}
+            onPress={handleComplete}
+            disabled={selectedCategories.length === 0}
+            onPressIn={() => console.log("완료 버튼 터치됨")}
+            accessibilityLabel="선택 완료 버튼"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: selectedCategories.length === 0 }}
+            accessibilityHint={
+              selectedCategories.length > 0
+                ? "선택한 카테고리로 진행하려면 두 번 탭하세요"
+                : "카테고리를 먼저 선택해주세요"
+            }
           >
-            완료
-          </Text>
-        </Pressable>
-      </View>
+            <Text
+              style={[
+                styles.completeButtonText,
+                selectedCategories.length === 0 &&
+                  styles.disabledCompleteButtonText,
+              ]}
+            >
+              완료
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -255,6 +257,7 @@ const styles = StyleSheet.create({
   },
   completeButtonContainer: {
     paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 30,
     alignItems: "center",
   },

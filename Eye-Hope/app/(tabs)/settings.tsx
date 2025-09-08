@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // 카테고리별 색상 매핑 함수 추가
 const getCategoryColor = (category: string): string => {
@@ -93,6 +95,7 @@ interface UserScheduleResponse {
 export default function SettingsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
 
   // 상태 관리
   const [currentCategories, setCurrentCategories] = useState<string[]>([
@@ -532,7 +535,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* 상단 제목 */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 20, 30) : 20 }]}>
           <Text style={[styles.title, { textAlign: "center" }]}>설정</Text>
           <Text style={[styles.subtitle, { textAlign: "center" }]}>
             사용자 정보와 현재 관심뉴스를 수정할 수 있습니다.

@@ -10,11 +10,13 @@ import {
   RefreshControl,
   TouchableOpacity, // TouchableOpacity를 import 합니다.
   Linking, // Linking을 import 합니다.
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface NewsItem {
   id: string;
@@ -44,6 +46,7 @@ const getCategoryColor = (category: string): string => {
 
 export default function InterestNewsScreen() {
   const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -285,7 +288,7 @@ export default function InterestNewsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 20, 30) : 20 }]}>
           <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
           <Text style={[styles.subtitle, { textAlign: "center" }]}>뉴스를 불러오는 중...</Text>
         </View>
@@ -300,7 +303,7 @@ export default function InterestNewsScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 20, 30) : 20 }]}>
           <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
           <Text style={[styles.subtitle, { textAlign: "center" }]}>
             {categories.length > 0
@@ -326,7 +329,7 @@ export default function InterestNewsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 20, 30) : 20 }]}>
         <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
         <Text style={[styles.subtitle, { textAlign: "center" }]}>
           {categories.length > 0

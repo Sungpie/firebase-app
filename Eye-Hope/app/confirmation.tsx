@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator } from "rea
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // 카테고리 매핑 함수들
 const categoryToId = (category: string): number => {
@@ -52,6 +53,7 @@ export default function ConfirmationScreen() {
     fromSettings?: string;
   }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
 
   // JSON 문자열을 파싱하여 카테고리 배열로 변환
@@ -344,7 +346,7 @@ export default function ConfirmationScreen() {
   return (
     <View style={styles.container}>
       {/* 상단 안내 문구 박스 */}
-      <View style={styles.instructionContainer}>
+      <View style={[styles.instructionContainer, { marginTop: Math.max(insets.top + 20, 30) }]}>
         <Text style={styles.instructionText}>
           선택하신 뉴스 기사를 확인할게요.
         </Text>
