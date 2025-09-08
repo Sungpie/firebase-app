@@ -66,7 +66,8 @@ export default function SelectCategoryScreen() {
           관심 분야 선택을 진행하겠습니다.
         </Text>
         <Text style={styles.instructionText}>
-          총 12개의 분야 중, 원하는 뉴스 기사 분야를 최대 5개까지 선택해주세요.
+          총 12개의 분야 중, 원하는 뉴스 기사 분야를{'\n'}
+          최대 5개까지 선택해주세요.
         </Text>
       </View>
 
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#000000",
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     backgroundColor: "#FFFFFF",
   },
