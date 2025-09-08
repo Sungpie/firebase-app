@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert,
   Linking, // Linking import 추가
+  TouchableOpacity,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -48,6 +49,7 @@ export default function CategoryNewsScreen() {
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const insets = useSafeAreaInsets();
@@ -61,6 +63,7 @@ export default function CategoryNewsScreen() {
   const fetchNews = async (pageNum: number = 0, isRefresh: boolean = false) => {
     if (!category) return;
 
+    setError(null); // 오류 상태 초기화
     try {
       if (isRefresh) {
         setLoading(true);
@@ -128,20 +131,7 @@ export default function CategoryNewsScreen() {
       setPage(pageNum);
     } catch (error) {
       console.error(`${category} 카테고리 뉴스 가져오기 오류:`, error);
-
-      // 사용자에게 친화적인 에러 메시지 표시
-      if (error instanceof Error) {
-        Alert.alert(
-          "오류",
-          `뉴스를 불러오는 중 문제가 발생했습니다: ${error.message}`,
-          [
-            {
-              text: "확인",
-              onPress: () => {},
-            },
-          ]
-        );
-      }
+      setError("뉴스를 불러오는 중 문제가 발생했습니다.");
 
       // 개발 중에는 샘플 데이터 표시
       if (pageNum === 0) {
@@ -284,6 +274,12 @@ export default function CategoryNewsScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    setError(null); // 새로고침 시 오류 상태 초기화
+    await fetchNews(0, true);
+  };
+
+  const handleRetry = async () => {
+    setError(null);
     await fetchNews(0, true);
   };
 
@@ -368,6 +364,31 @@ export default function CategoryNewsScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>뉴스를 불러오는 중입니다</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top }]}>
+          <Pressable style={styles.backButton} onPress={handleGoBack}>
+            <Ionicons name="chevron-back" size={24} color="#007AFF" />
+          </Pressable>
+          <Text style={styles.title}>{category} 뉴스</Text>
+          <View style={styles.placeholder} />
+        </View>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color="#FF3B30" />
+          <Text style={styles.errorTitle}>정보를 불러오지 못했어요</Text>
+          <Text style={styles.errorMessage}>
+            다시 불러오기 버튼을 눌러 정보를 불러오세요!
+          </Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Ionicons name="refresh" size={20} color="#FFFFFF" />
+            <Text style={styles.retryButtonText}>정보 불러오기</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -534,6 +555,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#8E8E93",
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+    paddingVertical: 60,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#FF3B30",
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: "#8E8E93",
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: "#007AFF",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -553,22 +610,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 20,
-  },
-  retryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#007AFF",
-  },
-  retryButtonText: {
-    marginLeft: 6,
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#007AFF",
   },
   newsSection: {
     marginTop: 20,

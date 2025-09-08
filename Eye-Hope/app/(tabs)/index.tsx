@@ -47,6 +47,7 @@ export default function InterestNewsScreen() {
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedTimes, setSelectedTimes] = useState<{
     morning: string;
@@ -162,6 +163,7 @@ export default function InterestNewsScreen() {
     if (categories.length === 0) return;
 
     setLoading(true);
+    setError(null); // 오류 상태 초기화
     console.log("뉴스 가져오기 시작, 카테고리:", categories);
 
     try {
@@ -231,7 +233,7 @@ export default function InterestNewsScreen() {
       setNewsData(flattenedNews);
     } catch (error) {
       console.error("뉴스 가져오기 오류:", error);
-      Alert.alert("오류", "뉴스를 가져오는 중 문제가 발생했습니다.");
+      setError("뉴스를 가져오는 중 문제가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -256,8 +258,14 @@ export default function InterestNewsScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    setError(null); // 새로고침 시 오류 상태 초기화
     await fetchNews();
     setRefreshing(false);
+  };
+
+  const handleRetry = async () => {
+    setError(null);
+    await fetchNews();
   };
 
   const formatTimeAgo = (publishedAt: string) => {
@@ -284,6 +292,32 @@ export default function InterestNewsScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>뉴스를 불러오는 중입니다</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { textAlign: "center" }]}>관심뉴스</Text>
+          <Text style={[styles.subtitle, { textAlign: "center" }]}>
+            {categories.length > 0
+              ? `${categories.join(", ")} 카테고리의 최신 뉴스입니다`
+              : "설정에서 관심 카테고리를 선택해주세요"}
+          </Text>
+        </View>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color="#FF3B30" />
+          <Text style={styles.errorTitle}>정보를 불러오지 못했어요</Text>
+          <Text style={styles.errorMessage}>
+            다시 불러오기 버튼을 눌러 정보를 불러오세요!
+          </Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Ionicons name="refresh" size={20} color="#FFFFFF" />
+            <Text style={styles.retryButtonText}>정보 불러오기</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -403,6 +437,42 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: "#8E8E93",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+    paddingVertical: 60,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#FF3B30",
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: "#8E8E93",
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: "#007AFF",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
   emptyContainer: {
     flex: 1,
