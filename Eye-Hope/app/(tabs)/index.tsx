@@ -212,7 +212,7 @@ export default function InterestNewsScreen() {
     try {
       const newsPromises = categories.map(async (category) => {
         try {
-          const url = `http://13.124.111.205:8080/api/news/category/${encodeURIComponent(
+          const url = `https://eyehope.site/api/news/category/${encodeURIComponent(
             category
           )}?size=3`;
           console.log(`${category} 카테고리 API 호출:`, url);
