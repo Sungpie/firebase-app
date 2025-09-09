@@ -5,10 +5,8 @@ const { withPodfile } = require('@expo/config-plugins');
 // Podfile의 post_install 훅에 추가할 스크립트 내용
 const postInstallScript = `
   installer.pods_project.targets.each do |target|
-    if target.name == 'React-RuntimeHermes'
-      target.build_configurations.each do |config|
-        config.build_settings['DEFINES_MODULE'] = 'NO'
-      end
+    target.build_configurations.each do |config|
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
     end
   end
 `;
