@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   instructionContainer: {
     marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 70,
     marginBottom: 30,
     padding: 16,
     borderWidth: 1,
