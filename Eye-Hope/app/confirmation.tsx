@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator, Linking } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
@@ -155,6 +155,32 @@ export default function ConfirmationScreen() {
     router.back();
   };
 
+  // 핸드폰 설정으로 이동하는 함수
+  const openDeviceSettings = async () => {
+    try {
+      // iOS와 Android 모두에서 설정 앱으로 이동
+      const canOpen = await Linking.canOpenURL('app-settings:');
+      if (canOpen) {
+        await Linking.openURL('app-settings:');
+      } else {
+        // iOS의 경우 일반 설정으로 이동
+        await Linking.openURL('App-Prefs:');
+      }
+    } catch (error) {
+      console.error('설정 앱 열기 실패:', error);
+      // 설정 앱을 열 수 없는 경우 일반 설정으로 이동 시도
+      try {
+        await Linking.openURL('App-Prefs:');
+      } catch (fallbackError) {
+        console.error('설정 앱 열기 대체 방법도 실패:', fallbackError);
+        Alert.alert(
+          "설정 열기 실패",
+          "설정 앱을 열 수 없습니다. 수동으로 설정 > 앱 > Eye-Hope에서 권한을 확인해주세요."
+        );
+      }
+    }
+  };
+
   const handleConfirm = async () => {
     console.log("=== 카테고리 확인 완료 ===");
     console.log("선택된 카테고리:", selectedCategories);
@@ -218,11 +244,17 @@ export default function ConfirmationScreen() {
           
           Alert.alert(
             "사용자 등록 실패",
-            "사용자 등록에 실패했습니다. 처음부터 다시 시작하시겠습니까?",
+            "사용자 등록에 실패했습니다.{'\n'}인터넷 연결을 확인하거나 앱 권한을 확인해주세요.",
             [
               {
                 text: "취소",
                 style: "cancel",
+              },
+              {
+                text: "설정으로 이동",
+                onPress: () => {
+                  openDeviceSettings();
+                },
               },
               {
                 text: "다시 시작",
