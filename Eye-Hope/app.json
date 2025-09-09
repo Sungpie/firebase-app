@@ -12,7 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.eyehope.eyehope",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "deploymentTarget": "14.0",
+      "deploymentTarget": "15.0",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSAppTransportSecurity": {
@@ -32,8 +32,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.eyehope.eyehope",
-      "googleServicesFile": "./google-services.json",
-      "usesCleartextTraffic": true
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
