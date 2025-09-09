@@ -8,12 +8,14 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  BackHandler,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 interface UserRegistrationData {
   deviceId: string;
@@ -37,6 +39,7 @@ interface NotificationScheduleData {
 
 export default function UserRegistrationScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { categories, selectedTimes } = useLocalSearchParams<{
     categories: string;
     selectedTimes: string;
@@ -379,6 +382,48 @@ export default function UserRegistrationScreen() {
   const handleGoBack = () => {
     router.back();
   };
+
+  // 뒤로가기 버튼 처리
+  useFocusEffect(
+    React.useCallback(() => {
+      // iOS 스와이프 제스처 비활성화
+      navigation.setOptions({
+        gestureEnabled: false,
+      });
+
+      const backAction = () => {
+        Alert.alert(
+          "앱 종료",
+          "앱을 종료하시겠습니까?",
+          [
+            {
+              text: "취소",
+              onPress: () => null,
+              style: "cancel"
+            },
+            {
+              text: "종료",
+              onPress: () => BackHandler.exitApp()
+            }
+          ]
+        );
+        return true; // 기본 뒤로가기 동작을 막음
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => {
+        backHandler.remove();
+        // 화면을 벗어날 때 제스처 다시 활성화
+        navigation.setOptions({
+          gestureEnabled: true,
+        });
+      };
+    }, [navigation])
+  );
 
   return (
     <View style={styles.container}>

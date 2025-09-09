@@ -11,10 +11,11 @@ import {
   TouchableOpacity, // TouchableOpacity를 import 합니다.
   Linking, // Linking을 import 합니다.
   Platform,
+  BackHandler, // BackHandler를 import 합니다.
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -47,6 +48,7 @@ const getCategoryColor = (category: string): string => {
 export default function InterestNewsScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -105,12 +107,50 @@ export default function InterestNewsScreen() {
     params.selectedTimes,
   ]);
 
-  // 화면이 포커스될 때마다 카테고리 새로고침
+  // 화면이 포커스될 때마다 카테고리 새로고침 및 뒤로가기 처리
   useFocusEffect(
     React.useCallback(() => {
       console.log("관심뉴스 화면 포커스됨");
       loadCategories();
-    }, [])
+
+      // iOS 스와이프 제스처 비활성화
+      navigation.setOptions({
+        gestureEnabled: false,
+      });
+
+      // 뒤로가기 버튼 처리
+      const backAction = () => {
+        Alert.alert(
+          "앱 종료",
+          "앱을 종료하시겠습니까?",
+          [
+            {
+              text: "취소",
+              onPress: () => null,
+              style: "cancel"
+            },
+            {
+              text: "종료",
+              onPress: () => BackHandler.exitApp()
+            }
+          ]
+        );
+        return true; // 기본 뒤로가기 동작을 막음
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => {
+        backHandler.remove();
+        // 화면을 벗어날 때 제스처 다시 활성화
+        navigation.setOptions({
+          gestureEnabled: true,
+        });
+      };
+    }, [navigation])
   );
 
   // 카테고리가 변경될 때마다 뉴스 다시 불러오기

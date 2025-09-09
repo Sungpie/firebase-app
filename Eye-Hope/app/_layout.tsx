@@ -186,6 +186,7 @@ return (
             name="(tabs)"
             options={{
               headerShown: false,
+              gestureEnabled: false, // iOS 스와이프 제스처 비활성화
             }}
           />
           <Stack.Screen
@@ -214,6 +215,7 @@ return (
             options={{
               headerShown: false,
               title: "사용자 등록",
+              gestureEnabled: false, // iOS 스와이프 제스처 비활성화
             }}
           />
           <Stack.Screen

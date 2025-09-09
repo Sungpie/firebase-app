@@ -80,9 +80,12 @@ export default function SelectCategoryScreen() {
       )}
 
       {/* 상단 안내 문구 */}
-      <View style={styles.instructionContainer}>
+      <View style={[
+        styles.instructionContainer,
+        fromSettings === "true" ? styles.instructionContainerFromSettings : styles.instructionContainerDefault
+      ]}>
         <Text style={styles.instructionText}>
-          관심 분야 선택을 진행하겠습니다.
+          관심 분야 선택을 진행하겠습니다.{'\n'}
         </Text>
         <Text style={styles.instructionText}>
           총 12개의 분야 중, 원하는 뉴스 기사 분야를{'\n'}
@@ -193,13 +196,18 @@ const styles = StyleSheet.create({
   },
   instructionContainer: {
     marginHorizontal: 20,
-    marginTop: 70,
     marginBottom: 30,
     padding: 16,
     borderWidth: 1,
     borderColor: "#E0E0E0",
     borderRadius: 8,
     backgroundColor: "#FFFFFF",
+  },
+  instructionContainerDefault: {
+    marginTop: 70, // 처음 접속했을 때의 여백
+  },
+  instructionContainerFromSettings: {
+    marginTop: 20, // 설정 페이지에서 왔을 때의 여백 (헤더가 있으므로 줄임)
   },
   instructionText: {
     fontSize: 16,
